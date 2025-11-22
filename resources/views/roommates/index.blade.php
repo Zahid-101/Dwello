@@ -28,28 +28,59 @@
 
     {{-- Matches tab --}}
     <div class="tab-content active" id="matchesContent">
-        {{-- Simple filters bar (visual only for now) --}}
-        <div style="background: white; border-radius: 16px; padding: 20px; margin-bottom: 32px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center" style="gap: 16px;">
-                    <select class="input" style="border-radius: 12px;">
-                        <option>All Locations</option>
-                    </select>
-                    <select class="input" style="border-radius: 12px;">
-                        <option>All Budgets</option>
-                    </select>
-                    <select class="input" style="border-radius: 12px;">
-                        <option>Compatibility: 70%+</option>
-                    </select>
-                </div>
-                <div class="flex items-center" style="gap: 12px;">
-                    <span style="color: var(--gray-600); font-size: 14px;">Sort by:</span>
-                    <select class="input" style="border-radius: 12px;">
-                        <option>Best Match</option>
-                    </select>
-                </div>
-            </div>
+        {{-- Filters bar --}}
+<div style="background: white; border-radius: 16px; padding: 20px; margin-bottom: 32px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+    <form method="GET" action="{{ route('roommates.index') }}" class="flex items-center justify-between" style="gap: 16px; flex-wrap: wrap;">
+        <div class="flex items-center" style="gap: 12px; flex-wrap: wrap;">
+            <input
+                type="text"
+                name="city"
+                placeholder="Preferred city"
+                value="{{ request('city') }}"
+                class="input"
+                style="border-radius: 12px; min-width: 160px;"
+            >
+
+            <input
+                type="number"
+                name="min_budget"
+                placeholder="Min budget"
+                value="{{ request('min_budget') }}"
+                class="input"
+                style="border-radius: 12px; width: 130px;"
+            >
+
+            <input
+                type="number"
+                name="max_budget"
+                placeholder="Max budget"
+                value="{{ request('max_budget') }}"
+                class="input"
+                style="border-radius: 12px; width: 130px;"
+            >
+
+            <label style="display:flex; align-items:center; gap:6px; font-size:13px; color:var(--gray-600);">
+                <input type="checkbox" name="has_pets" {{ request()->boolean('has_pets') ? 'checked' : '' }}>
+                <span>Has pets</span>
+            </label>
+
+            <label style="display:flex; align-items:center; gap:6px; font-size:13px; color:var(--gray-600);">
+                <input type="checkbox" name="is_smoker" {{ request()->boolean('is_smoker') ? 'checked' : '' }}>
+                <span>Smoker</span>
+            </label>
         </div>
+
+        <div class="flex items-center" style="gap: 10px;">
+            <button type="submit" class="btn btn-primary" style="border-radius: 12px; padding: 8px 16px;">
+                Apply
+            </button>
+            <a href="{{ route('roommates.index') }}" class="btn btn-outline" style="border-radius: 12px; padding: 8px 16px;">
+                Clear
+            </a>
+        </div>
+    </form>
+</div>
+
 
         {{-- Profiles grid --}}
         <div class="grid grid-3 gap-6" style="margin-bottom: 32px;">
