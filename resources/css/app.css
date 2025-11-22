@@ -1,3 +1,287 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ==== Dwello Theme (from your mockups) ==== */
+
+:root {
+    --dwello-bg: #F9F5F0;
+    --dwello-surface: #F2EAD3;
+    --dwello-primary: #F4991A;
+    --dwello-primary-hover: #D88512;
+    --dwello-accent: #344F1F;
+    --dwello-accent-hover: #2A3E18;
+    --text-primary: #111827;
+    --text-muted: #6B7280;
+    --white: #FFFFFF;
+    --gray-50: #F9FAFB;
+    --gray-100: #F3F4F6;
+    --gray-200: #E5E7EB;
+    --gray-300: #D1D5DB;
+    --gray-400: #9CA3AF;
+    --gray-500: #6B7280;
+    --gray-600: #4B5563;
+    --gray-700: #374151;
+    --gray-900: #111827;
+    --green-500: #10B981;
+    --green-600: #059669;
+    --amber-500: #F59E0B;
+    --red-500: #EF4444;
+}
+
+body {
+    background-color: var(--dwello-bg);
+    font-family: 'Inter', sans-serif;
+    color: var(--text-primary);
+    line-height: 1.6;
+}
+
+/* Utility classes that match your HTML */
+
+.font-poppins {
+    font-family: 'Poppins', sans-serif;
+}
+
+.container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+.flex {
+    display: flex;
+}
+
+.grid {
+    display: grid;
+}
+
+.items-center {
+    align-items: center;
+}
+
+.justify-between {
+    justify-content: space-between;
+}
+
+.justify-center {
+    justify-content: center;
+}
+
+.grid-2 {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.grid-3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.grid-4 {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+.gap-6 {
+    gap: 24px;
+}
+
+.gap-8 {
+    gap: 32px;
+}
+
+.text-center {
+    text-align: center;
+}
+
+/* Buttons */
+
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 20px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+}
+
+.btn-primary {
+    background-color: var(--dwello-primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: var(--dwello-primary-hover);
+}
+
+.btn-outline {
+    background-color: transparent;
+    color: var(--dwello-primary);
+    border: 2px solid var(--dwello-primary);
+}
+
+.btn-outline:hover {
+    background-color: var(--dwello-primary);
+    color: white;
+}
+
+/* Inputs */
+
+.input {
+    padding: 12px;
+    border: 1px solid var(--gray-300);
+    border-radius: 20px;
+    font-size: 14px;
+}
+
+.input:focus {
+    outline: none;
+    border-color: var(--dwello-primary);
+    box-shadow: 0 0 0 3px rgba(244, 153, 26, 0.1);
+}
+
+/* Badges, cards, misc */
+
+.badge {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.badge-verified {
+    background-color: var(--green-500);
+    color: white;
+}
+
+.badge-match {
+    background-color: var(--dwello-primary);
+    color: white;
+}
+
+.badge-lifestyle {
+    background-color: var(--dwello-surface);
+    color: var(--dwello-accent);
+}
+
+.profile-card {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    padding: 24px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.profile-card:hover {
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    transform: translateY(-4px);
+}
+
+/* compatibility / tabs from roommate page */
+
+.compatibility-ring {
+    width: 120px;
+    height: 120px;
+    position: relative;
+    margin: 0 auto;
+}
+
+.compatibility-ring svg {
+    transform: rotate(-90deg);
+}
+
+.compatibility-ring .percentage {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--gray-900);
+}
+
+.tab-button {
+    padding: 12px 24px;
+    background: none;
+    border: none;
+    border-radius: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: var(--gray-600);
+    display: flex;
+    align-items: center;
+}
+
+.tab-button.active {
+    background: var(--dwello-primary);
+    color: white;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.compatibility-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    gap: 6px;
+}
+
+.chip-match {
+    background: #D1FAE5;
+    color: #065F46;
+}
+
+.chip-partial {
+    background: #FEF3C7;
+    color: #92400E;
+}
+
+.chip-conflict {
+    background: #FEE2E2;
+    color: #991B1B;
+}
+
+.saved-indicator {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 32px;
+    height: 32px;
+    background: var(--gray-400);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.saved-indicator.saved {
+    background: var(--red-500);
+}
+
+.saved-indicator:hover {
+    transform: scale(1.1);
+}
+
+@media (max-width: 768px) {
+
+    .grid-2,
+    .grid-3,
+    .grid-4 {
+        grid-template-columns: 1fr;
+    }
+}
