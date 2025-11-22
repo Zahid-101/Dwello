@@ -30,15 +30,18 @@
                 </div>
 
                 <nav class="flex items-center" style="gap: 32px;">
-                    <a href="{{ url('/') }}" style="color: var(--gray-700); text-decoration: none; font-weight: 500;">Home</a>
+                    <a href="{{ route('home') }}" style="color: var(--gray-700); text-decoration: none; font-weight: 500;">Home</a>
                     <a href="{{ route('properties.index') }}" style="color: var(--gray-700); text-decoration: none; font-weight: 500;">Search Rooms</a>
                     <a href="{{ route('roommates.index') }}" style="color: var(--dwello-primary); text-decoration: none; font-weight: 500;">Find Flatmate</a>
-                    {{-- Messages / Profile can be wired later --}}
-                    <a href="#" style="color: var(--gray-700); text-decoration: none; font-weight: 500;">Messages</a>
+
+                    {{-- Not built yet → send to under-development --}}
+                    <a href="{{ route('under-development') }}" style="color: var(--gray-700); text-decoration: none; font-weight: 500;">Messages</a>
+
                     @auth
                         <a href="{{ route('roommate-profiles.create') }}" style="color: var(--gray-700); text-decoration: none; font-weight: 500;">Profile</a>
                     @endauth
                 </nav>
+
 
                 <div class="flex items-center" style="gap: 16px;">
                     @guest
