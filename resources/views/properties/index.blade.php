@@ -180,6 +180,20 @@
         crossorigin="">
     </script>
 
+    @php
+        // Build a simple array of markers in PHP
+        $markerData = $properties->map(function ($p) {
+            return [
+                'id'    => $p->id,
+                'title' => $p->title,
+                'city'  => $p->city,
+                'rent'  => $p->monthly_rent,
+                'lat'   => $p->latitude,
+                'lng'   => $p->longitude,
+            ];
+        })->values(); // values() to reset keys
+    @endphp
+
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             // Default center (Colombo)
@@ -189,18 +203,8 @@
                 attribution: '&copy; OpenStreetMap contributors'
             }).addTo(map);
 
-            const listings = @json(
-                $properties->map(function ($p) {
-                    return [
-                        'id'    => $p->id,
-                        'title' => $p->title,
-                        'city'  => $p->city,
-                        'rent'  => $p->monthly_rent,
-                        'lat'   => $p->latitude,
-                        'lng'   => $p->longitude,
-                    ];
-                })
-            );
+            // Now listings is just JSON from the PHP array above
+            const listings = @json($markerData);
 
             const markers = [];
 
@@ -209,9 +213,9 @@
 
                 const marker = L.marker([listing.lat, listing.lng]).addTo(map);
                 marker.bindPopup(
-                    <strong>${listing.title}</strong><br> +
-                    ${listing.city}<br> +
-                    LKR ${listing.rent} / month
+                    `<strong>${listing.title}</strong><br>` +
+                    `${listing.city}<br>` +
+                    `LKR ${listing.rent} / month`
                 );
                 markers.push(marker);
             });
