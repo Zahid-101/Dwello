@@ -47,4 +47,14 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function properties()
+    {
+        return $this->hasMany(Property::class);
+    }
+
+    public function roommateProfile()
+    {
+        return $this->hasOne(RoommateProfile::class);
+    }
 }
