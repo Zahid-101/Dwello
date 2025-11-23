@@ -9,7 +9,10 @@
 
     {{-- Google fonts --}}
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
-
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
     {{-- Laravel / Tailwind --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
@@ -108,7 +111,8 @@
             </div>
         </div>
     </footer>
-
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    {{-- Page-specific scripts (properties map, roommates tabs, etc.) --}}
     @stack('scripts')
 </body>
 </html>
