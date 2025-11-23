@@ -3,16 +3,6 @@
 
 @section('title', 'Search Rooms - Dwello')
 
-@push('styles')
-    {{-- Leaflet CSS (free map library) --}}
-    <link
-        rel="stylesheet"
-        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-        integrity="sha256-VuZ8H6glCEI0CkU7tPZT+8pU02sCkWZ1CkMqP5pA9Po="
-        crossorigin=""
-    />
-@endpush
-
 @section('content')
     <!-- Filter pills bar -->
     <div style="background: white; border-bottom: 1px solid var(--gray-200); padding: 16px 0;">
@@ -28,6 +18,12 @@
 
                     @if(request('city'))
                         <span class="badge badge-lifestyle" style="white-space: nowrap;">{{ request('city') }}</span>
+                    @endif
+
+                    @if(request('type'))
+                        <span class="badge badge-lifestyle" style="white-space: nowrap;">
+                            {{ ucfirst(request('type')) }}
+                        </span>
                     @endif
 
                     <a href="{{ route('properties.index') }}"
@@ -74,6 +70,17 @@
                                value="{{ request('q') }}" style="border-radius: 12px; width: 100%;">
                     </div>
 
+                    {{-- Type --}}
+                    <div style="margin-bottom: 24px;">
+                        <h3 style="font-weight: 500; color: var(--gray-900); margin-bottom: 8px;">Type</h3>
+                        <select name="type" class="input" style="border-radius: 12px; width: 100%;">
+                            <option value="">Any type</option>
+                            <option value="room" {{ request('type') === 'room' ? 'selected' : '' }}>Room</option>
+                            <option value="apartment" {{ request('type') === 'apartment' ? 'selected' : '' }}>Apartment</option>
+                            <option value="house" {{ request('type') === 'house' ? 'selected' : '' }}>House</option>
+                        </select>
+                    </div>
+
                     <button type="submit" class="btn btn-primary" style="width: 100%; border-radius: 16px;">
                         Apply Filters
                     </button>
@@ -86,24 +93,24 @@
             {{-- Results --}}
             <div style="flex: 1; overflow-y: auto;">
                 <div style="padding: 24px;">
-                    <div class="flex items-center justify-between" style="margin-bottom: 24px;">
+                    <div class="flex items-center justify-between" style="margin-bottom: 8px;">
                         <h2 style="font-size: 20px; font-family: 'Poppins', sans-serif; font-weight: 600; color: var(--gray-900);">
                             {{ $properties->total() }} rooms found
                         </h2>
-                        <select class="input">
-                            <option>Best Match</option>
-                            <option>Price: Low to High</option>
-                            <option>Price: High to Low</option>
-                            <option>Newest First</option>
-                        </select>
                     </div>
+                    <p style="color: var(--gray-600); font-size: 14px; margin-bottom: 16px;">
+                        Showing {{ $properties->count() }} result(s)
+                        @if(request()->hasAny(['q','city','min_rent','max_rent','type']))
+                            for your filters.
+                        @endif
+                    </p>
 
                     {{-- Listings --}}
                     <div style="display: flex; flex-direction: column; gap: 24px;">
                         @forelse ($properties as $property)
                             <div style="background: white; border-radius: 20px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); overflow: hidden;">
                                 <div style="display: flex;">
-                                    {{-- Image placeholder (later you can bind real image_url) --}}
+                                    {{-- Image placeholder --}}
                                     <div style="width: 280px; height: 200px; position: relative;">
                                         <img
                                             src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=300&h=200&fit=crop"
@@ -135,7 +142,7 @@
                                             </p>
                                         @endif
                                         <p style="color: var(--gray-700); margin-bottom: 12px;">
-                                            {{ Str::limit($property->description, 200) }}
+                                            {{ \Illuminate\Support\Str::limit($property->description, 200) }}
                                         </p>
                                         <div class="flex items-center justify-between">
                                             <div class="flex" style="gap: 8px;">
@@ -173,57 +180,100 @@
 @endsection
 
 @push('scripts')
-    {{-- Leaflet JS --}}
-    <script
-        src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-        integrity="sha256-o9N1j7kGAdzv2kXWr6yUAdJjYF3S9i5l+I5x3Fr2E0c="
-        crossorigin="">
-    </script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // 1) Data from PHP → JS
+        window.listings = {{ Js::from(
+            $properties->map(function ($p) {
+                return [
+                    'id'      => $p->id,
+                    'title'   => $p->title,
+                    'city'    => $p->city,
+                    'address' => $p->address,
+                    'lat'     => $p->latitude,
+                    'lng'     => $p->longitude,
+                    'rent'    => $p->monthly_rent,
+                ];
+            })->values()
+        ) }};
 
-    @php
-        // Build a simple array of markers in PHP
-        $markerData = $properties->map(function ($p) {
-            return [
-                'id'    => $p->id,
-                'title' => $p->title,
-                'city'  => $p->city,
-                'rent'  => $p->monthly_rent,
-                'lat'   => $p->latitude,
-                'lng'   => $p->longitude,
-            ];
-        })->values(); // values() to reset keys
-    @endphp
+        console.log('Listings inside script:', window.listings);
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // Default center (Colombo)
-            const map = L.map('map').setView([6.9271, 79.8612], 12);
+        const mapContainer = document.getElementById('map');
+        if (!mapContainer) {
+            console.warn('#map not found');
+            return;
+        }
 
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; OpenStreetMap contributors'
-            }).addTo(map);
+        const map = L.map('map');
 
-            // Now listings is just JSON from the PHP array above
-            const listings = @json($markerData);
+        // 2) Base layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
 
-            const markers = [];
+        const markers = [];
 
-            listings.forEach(listing => {
-                if (!listing.lat || !listing.lng) return;
+        // 3) Property markers
+        window.listings.forEach(listing => {
+            if (!listing.lat || !listing.lng) return;
 
-                const marker = L.marker([listing.lat, listing.lng]).addTo(map);
-                marker.bindPopup(
-                    `<strong>${listing.title}</strong><br>` +
-                    `${listing.city}<br>` +
-                    `LKR ${listing.rent} / month`
-                );
-                markers.push(marker);
-            });
-
-            if (markers.length > 0) {
-                const group = L.featureGroup(markers);
-                map.fitBounds(group.getBounds().pad(0.2));
-            }
+            const marker = L.marker([listing.lat, listing.lng]).addTo(map);
+            marker.bindPopup(`
+                <strong>${listing.title}</strong><br/>
+                ${listing.city}<br/>
+                LKR ${Number(listing.rent).toLocaleString()}
+            `);
+            markers.push(marker);
         });
-    </script>
+
+        if (markers.length) {
+            const group = L.featureGroup(markers);
+            map.fitBounds(group.getBounds().pad(0.2));
+        } else {
+            map.setView([7.8731, 80.7718], 7); // Sri Lanka
+        }
+
+        // 4) USER LOCATION (debug version)
+        if ('geolocation' in navigator) {
+            console.log('Geolocation API available, requesting position...');
+
+            navigator.geolocation.getCurrentPosition(
+                function (position) {
+                    console.log('Geolocation SUCCESS:', position);
+
+                    const userLat = position.coords.latitude;
+                    const userLng = position.coords.longitude;
+
+                    // Make user marker visually different (circle)
+                    const userMarker = L.circleMarker([userLat, userLng], {
+                        radius: 8,
+                        color: '#2563eb',
+                        fillColor: '#3b82f6',
+                        fillOpacity: 0.9
+                    }).addTo(map);
+
+                    userMarker.bindPopup('You are here').openPopup();
+
+                    markers.push(userMarker);
+                    const group = L.featureGroup(markers);
+                    map.fitBounds(group.getBounds().pad(0.2));
+                },
+                function (error) {
+                    console.warn('Geolocation ERROR:', error.code, error.message);
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000
+                }
+            );
+        } else {
+            console.warn('Geolocation is not supported in this browser.');
+        }
+    });
+</script>
 @endpush
+
+
+
+
