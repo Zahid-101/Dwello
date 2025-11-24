@@ -35,7 +35,7 @@
                 <nav class="flex items-center" style="gap: 32px;">
                     <a href="{{ route('home') }}" style="color: var(--gray-700); text-decoration: none; font-weight: 500;">Home</a>
                     <a href="{{ route('properties.index') }}" style="color: var(--gray-700); text-decoration: none; font-weight: 500;">Search Rooms</a>
-                    <a href="{{ route('roommates.index') }}" style="color: var(--dwello-primary); text-decoration: none; font-weight: 500;">Find Flatmate</a>
+                    <a href="{{ route('roommates.index') }}" style="color: var(--gray-700); text-decoration: none; font-weight: 500;">Find Flatmate</a>
 
                     {{-- Not built yet → send to under-development --}}
                     <a href="{{ route('under-development') }}" style="color: var(--gray-700); text-decoration: none; font-weight: 500;">Messages</a>
