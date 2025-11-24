@@ -86,21 +86,9 @@
             </div>
 
             <div class="grid grid-2 gap-6" style="margin-bottom: 24px;">
-                <div>
-                    <label style="display:block; font-size: 14px; font-weight:500; margin-bottom:6px;">
-                        Latitude (for map – optional)
-                    </label>
-                    <input class="input" style="width:100%; border-radius:12px;"
-                           name="latitude" value="{{ old('latitude') }}">
+                    <input type="hidden" name="latitude" id="latitude" value="{{ old('latitude') }}">
+                    <input type="hidden" name="longitude" id="longitude" value="{{ old('longitude') }}">
                 </div>
-                <div>
-                    <label style="display:block; font-size: 14px; font-weight:500; margin-bottom:6px;">
-                        Longitude (for map – optional)
-                    </label>
-                    <input class="input" style="width:100%; border-radius:12px;"
-                           name="longitude" value="{{ old('longitude') }}">
-                </div>
-            </div>
 
             <div class="flex justify-end" style="gap: 12px;">
                 <a href="{{ route('properties.index') }}" class="btn btn-outline">Cancel</a>
@@ -110,3 +98,44 @@
     </div>
 </div>
 @endsection
+{{--Automatic loaction for our lat and long from address given--}}
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const cityInput = document.getElementById('city');
+        const addressInput = document.getElementById('address');
+        const latInput = document.getElementById('latitude');
+        const lngInput = document.getElementById('longitude');
+
+        async function fetchCoordinates() {
+            const city = cityInput.value;
+            const address = addressInput.value;
+
+            if (city.length < 2 || address.length < 5) return;
+
+            const query = `${address}, ${city}`;
+            const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`;
+
+            try {
+                // REMOVED: latInput.placeholder = "Searching..."; (User can't see this anyway)
+
+                const response = await fetch(url, {
+                    headers: { 'User-Agent': 'Dwello-Student-Project' }
+                });
+                const data = await response.json();
+
+                if (data && data.length > 0) {
+                    latInput.value = data[0].lat;
+                    lngInput.value = data[0].lon;
+                    console.log("Location found:", data[0].lat, data[0].lon); // Optional: for debugging
+                }
+            } catch (error) {
+                console.error('Geocoding error:', error);
+            }
+        }
+
+        cityInput.addEventListener('blur', fetchCoordinates);
+        addressInput.addEventListener('blur', fetchCoordinates);
+    });
+</script>
+@endpush

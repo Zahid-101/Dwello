@@ -106,7 +106,7 @@
                         </p>
                     </div>
 
-                    {{-- Compatibility ring (fake but stable, only uses this profile) --}}
+                    {{-- Compatibility ring (fake but stable, only uses this profile) --
                     @php
                         $base = 70;
                         if ($profile->budget_min || $profile->budget_max) $base += 10;
@@ -117,7 +117,7 @@
                         $circumference = 339.3;
                         $offset = $circumference - ($compatibility / 100) * $circumference;
                     @endphp
-
+                    }}
                     <div class="compatibility-ring" style="margin-bottom: 20px;">
                         <svg width="120" height="120">
                             <circle cx="60" cy="60" r="54" stroke="#E5E7EB" stroke-width="8" fill="none"/>
