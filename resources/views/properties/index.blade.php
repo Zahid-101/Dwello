@@ -179,8 +179,10 @@
     </div>
 @endsection
 
+
 @push('scripts')
 <script>
+    //Live location for interacive map
     document.addEventListener('DOMContentLoaded', function () {
         // 1) Data from PHP → JS
         window.listings = {{ Js::from(

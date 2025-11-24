@@ -33,7 +33,7 @@ class RoommateProfileController extends Controller
 
         if ($request->boolean('is_smoker')) {
             $query->where('is_smoker', 1);
-        }~
+        }
 
         $profiles = $query->paginate(9)->withQueryString();
 
