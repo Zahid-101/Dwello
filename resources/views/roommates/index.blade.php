@@ -14,17 +14,7 @@
         </p>
     </div>
 
-    {{-- Tabs --}}
-    <div class="flex justify-center" style="margin-bottom: 32px;">
-        <div style="background: var(--gray-100); border-radius: 16px; padding: 6px;">
-            <button class="tab-button active" onclick="switchTab('matches')" id="matchesTab">
-                Get Matches
-            </button>
-            <button class="tab-button" onclick="switchTab('compare')" id="compareTab">
-                Compare Profiles
-            </button>
-        </div>
-    </div>
+
 
     {{-- Matches tab --}}
     <div class="tab-content active" id="matchesContent">
@@ -162,9 +152,11 @@
                         <a href="{{ route('under-development') }}" class="btn btn-outline" style="padding: 8px 16px; font-size: 14px;">
                             View Profile
                         </a>
+                        {{--Future feature 
                         <a href="{{ route('under-development') }}" class="btn btn-primary" style="padding: 8px 16px; font-size: 14px;">
                             Message
                         </a>
+                        --}}
                     </div>
                 </div>
             @empty

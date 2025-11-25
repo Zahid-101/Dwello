@@ -101,41 +101,71 @@
 {{--Automatic loaction for our lat and long from address given--}}
 @push('scripts')
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const cityInput = document.getElementById('city');
-        const addressInput = document.getElementById('address');
-        const latInput = document.getElementById('latitude');
-        const lngInput = document.getElementById('longitude');
+document.addEventListener('DOMContentLoaded', function () {
+    const cityInput = document.getElementById('city');
+    const addressInput = document.getElementById('address');
+    const latInput = document.getElementById('latitude');
+    const lngInput = document.getElementById('longitude');
 
-        async function fetchCoordinates() {
-            const city = cityInput.value;
-            const address = addressInput.value;
+    let debounceTimer = null;
 
-            if (city.length < 2 || address.length < 5) return;
+    function debounce(func, delay = 600) {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(func, delay);
+    }
 
-            const query = `${address}, ${city}`;
-            const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`;
+    async function fetchCoordinates() {
+        const city = cityInput.value.trim();
+        const address = addressInput.value.trim();
 
-            try {
-                // REMOVED: latInput.placeholder = "Searching..."; (User can't see this anyway)
+        if (city.length < 2 || address.length < 3) return;
 
-                const response = await fetch(url, {
-                    headers: { 'User-Agent': 'Dwello-Student-Project' }
-                });
-                const data = await response.json();
+        const query = `${address}, ${city}`;
+        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`;
 
-                if (data && data.length > 0) {
-                    latInput.value = data[0].lat;
-                    lngInput.value = data[0].lon;
-                    console.log("Location found:", data[0].lat, data[0].lon); // Optional: for debugging
+        try {
+            console.log("Fetching:", query);
+
+            const response = await fetch(url, {
+                headers: {
+                    // You CANNOT override User-Agent in browser JS.
+                    // So we add a Referer instead – allowed by browsers.
+                    'Accept': 'application/json',
+                    'Referrer-Policy': 'strict-origin-when-cross-origin'
                 }
-            } catch (error) {
-                console.error('Geocoding error:', error);
-            }
-        }
+            });
 
-        cityInput.addEventListener('blur', fetchCoordinates);
-        addressInput.addEventListener('blur', fetchCoordinates);
-    });
+            const data = await response.json();
+
+            if (data && data.length > 0) {
+                latInput.value = data[0].lat;
+                lngInput.value = data[0].lon;
+                console.log("Coordinates:", data[0].lat, data[0].lon);
+            } else {
+                console.warn("No results from geocoder.");
+            }
+        } catch (error) {
+            console.error("Geocoding failed:", error);
+        }
+    }
+
+    function triggerSearch() {
+        debounce(fetchCoordinates, 700); // prevents spam requests
+    }
+
+    cityInput.addEventListener('input', triggerSearch);
+    addressInput.addEventListener('input', triggerSearch);
+
+    // Ensure coords exist before final form submit
+    const form = cityInput.closest('form');
+    if (form) {
+        form.addEventListener('submit', async function (e) {
+            if (!latInput.value || !lngInput.value) {
+                console.log("Fetching before submit...");
+                await fetchCoordinates();
+            }
+        });
+    }
+});
 </script>
 @endpush

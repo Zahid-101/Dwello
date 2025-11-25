@@ -89,14 +89,14 @@
 
             <div class="flex" style="gap: 16px; margin-bottom: 16px;">
                 <label class="flex items-center" style="gap: 8px;">
-                    <input type="checkbox" name="is_smoker"
-                           {{ old('is_smoker', $profile->is_smoker ?? false) ? 'checked' : '' }}>
-                    <span style="font-size: 14px;">I smoke</span>
-                </label>
-                <label class="flex items-center" style="gap: 8px;">
-                    <input type="checkbox" name="has_pets"
-                           {{ old('has_pets', $profile->has_pets ?? false) ? 'checked' : '' }}>
-                    <span style="font-size: 14px;">I have pets</span>
+                        <input type="checkbox" name="is_smoker"
+                            {{ old('is_smoker', $profile->is_smoker ?? false) ? 'checked' : '' }}>
+                        <span style="font-size: 14px;">I smoke</span>
+                    </label>
+                    <label class="flex items-center" style="gap: 8px;">
+                        <input type="checkbox" name="has_pets"
+                            {{ old('has_pets', $profile->has_pets ?? false) ? 'checked' : '' }}>
+                        <span style="font-size: 14px;">I have pets</span>
                 </label>
             </div>
 
