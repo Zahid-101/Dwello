@@ -129,5 +129,7 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     {{-- Page-specific scripts (properties map, roommates tabs, etc.) --}}
     @stack('scripts')
+    @stack('map-scripts')
+    @stack('form-scripts')
 </body>
 </html>

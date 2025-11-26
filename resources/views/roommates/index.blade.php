@@ -189,7 +189,7 @@
 </div>
 @endsection
 
-@push('scripts')
+@push('form-scripts')
 <script>
     function switchTab(tabName) {
         document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));

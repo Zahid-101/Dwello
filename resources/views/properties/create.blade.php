@@ -40,12 +40,12 @@
             <div class="grid grid-2 gap-6" style="margin-bottom: 16px;">
                 <div>
                     <label style="display:block; font-size: 14px; font-weight:500; margin-bottom:6px;">City</label>
-                    <input class="input" style="width:100%; border-radius:12px;"
+                    <input class="input" id="city" style="width:100%; border-radius:12px;"
                            name="city" value="{{ old('city') }}" required>
                 </div>
                 <div>
                     <label style="display:block; font-size: 14px; font-weight:500; margin-bottom:6px;">Address</label>
-                    <input class="input" style="width:100%; border-radius:12px;"
+                    <input class="input" id="address" style="width:100%; border-radius:12px;"
                            name="address" value="{{ old('address') }}" required>
                 </div>
             </div>
@@ -99,70 +99,125 @@
 </div>
 @endsection
 {{--Automatic loaction for our lat and long from address given--}}
-@push('scripts')
+@push('form-scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    console.log('🔍 Geocoding script starting...');
+    
     const cityInput = document.getElementById('city');
     const addressInput = document.getElementById('address');
     const latInput = document.getElementById('latitude');
     const lngInput = document.getElementById('longitude');
-
-    let debounceTimer = null;
-
-    function debounce(func, delay = 600) {
-        clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(func, delay);
+    
+    // Check if form exists
+    if (!cityInput || !addressInput) {
+        console.log('⚠️ Form inputs not found, exiting');
+        return;
     }
-
+    
+    console.log('✅ All inputs found:', {
+        city: cityInput,
+        address: addressInput,
+        lat: latInput,
+        lng: lngInput
+    });
+    
+    let debounceTimer = null;
+    
     async function fetchCoordinates() {
         const city = cityInput.value.trim();
         const address = addressInput.value.trim();
-
-        if (city.length < 2 || address.length < 3) return;
-
-        const query = `${address}, ${city}`;
+        
+        console.log('📍 Attempting geocode with:', { city, address });
+        
+        if (city.length < 2 || address.length < 3) {
+            console.log('⚠️ Input too short, skipping');
+            return;
+        }
+        
+        const query = `${address}, ${city}, Sri Lanka`;
         const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`;
-
+        
+        console.log('🌐 Fetching from:', url);
+        
         try {
-            console.log("Fetching:", query);
-
-            const response = await fetch(url, {
-                headers: {
-                    // You CANNOT override User-Agent in browser JS.
-                    // So we add a Referer instead – allowed by browsers.
-                    'Accept': 'application/json',
-                    'Referrer-Policy': 'strict-origin-when-cross-origin'
-                }
-            });
-
+            const response = await fetch(url);
+            console.log('📥 Response status:', response.status);
+            
+            if (!response.ok) {
+                console.error('❌ HTTP error:', response.status, response.statusText);
+                return;
+            }
+            
             const data = await response.json();
-
+            console.log('📦 API Response:', data);
+            
             if (data && data.length > 0) {
                 latInput.value = data[0].lat;
                 lngInput.value = data[0].lon;
-                console.log("Coordinates:", data[0].lat, data[0].lon);
+                console.log('✅ Coordinates SET:', {
+                    lat: latInput.value,
+                    lng: lngInput.value
+                });
+                
+                // Visual feedback (optional)
+                latInput.style.backgroundColor = '#d4edda';
+                lngInput.style.backgroundColor = '#d4edda';
+                setTimeout(() => {
+                    latInput.style.backgroundColor = '';
+                    lngInput.style.backgroundColor = '';
+                }, 2000);
             } else {
-                console.warn("No results from geocoder.");
+                console.warn('⚠️ No results from geocoder for:', query);
+                alert('Could not find coordinates for this address. Please try a different address.');
             }
         } catch (error) {
-            console.error("Geocoding failed:", error);
+            console.error('❌ Geocoding failed:', error);
+            alert('Geocoding error: ' + error.message);
         }
     }
-
-    function triggerSearch() {
-        debounce(fetchCoordinates, 700); // prevents spam requests
-    }
-
-    cityInput.addEventListener('input', triggerSearch);
-    addressInput.addEventListener('input', triggerSearch);
-
-    // Ensure coords exist before final form submit
+    
+    // Debounced event listeners
+    cityInput.addEventListener('input', () => {
+        console.log('⌨️ City input changed');
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(fetchCoordinates, 1000);
+    });
+    
+    addressInput.addEventListener('input', () => {
+        console.log('⌨️ Address input changed');
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(fetchCoordinates, 1000);
+    });
+    
+    // Form submit validation
     const form = cityInput.closest('form');
     if (form) {
+        console.log('✅ Form found:', form);
+        
         form.addEventListener('submit', async function (e) {
+            console.log('📝 Form submitting...');
+            console.log('Current values:', {
+                lat: latInput.value,
+                lng: lngInput.value
+            });
+            
             if (!latInput.value || !lngInput.value) {
-                console.log("Fetching before submit...");
+                e.preventDefault();
+                console.log('⏳ No coordinates yet, fetching...');
+                
                 await fetchCoordinates();
+                
+                // Check again after fetch
+                if (latInput.value && lngInput.value) {
+                    console.log('✅ Coordinates obtained, submitting...');
+                    form.submit();
+                } else {
+                    alert('Could not determine coordinates. Please check the address and city.');
+                    console.error('❌ Still no coordinates after fetch');
+                }
+            } else {
+                console.log('✅ Coordinates present, allowing submit');
             }
         });
     }
