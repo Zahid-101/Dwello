@@ -33,6 +33,7 @@
 
             <input
                 type="number"
+                step="100"
                 name="min_budget"
                 placeholder="Min budget"
                 value="{{ request('min_budget') }}"
@@ -42,6 +43,7 @@
 
             <input
                 type="number"
+                step="100"
                 name="max_budget"
                 placeholder="Max budget"
                 value="{{ request('max_budget') }}"

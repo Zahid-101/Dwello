@@ -49,9 +49,9 @@
                     <div style="margin-bottom: 24px;">
                         <h3 style="font-weight: 500; color: var(--gray-900); margin-bottom: 8px;">Budget (LKR)</h3>
                         <div class="flex" style="gap: 8px;">
-                            <input class="input" type="number" name="min_rent" placeholder="Min"
+                            <input class="input" type="number" step="100" name="min_rent" placeholder="Min"
                                    value="{{ request('min_rent') }}" style="border-radius: 12px; width: 50%;">
-                            <input class="input" type="number" name="max_rent" placeholder="Max"
+                            <input class="input" type="number" step="100" name="max_rent" placeholder="Max"
                                    value="{{ request('max_rent') }}" style="border-radius: 12px; width: 50%;">
                         </div>
                     </div>
@@ -118,7 +118,8 @@
                                             style="width: 100%; height: 100%; object-fit: cover;"
                                         >
                                         <div style="position: absolute; top: 12px; left: 12px;">
-                                            <span class="badge badge-verified">Verified</span>
+                                           {{--For future <span class="badge badge-verified">Verified</span>
+                                            --}}
                                         </div>
                                     </div>
 

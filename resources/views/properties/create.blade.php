@@ -53,7 +53,7 @@
             <div class="grid grid-3 gap-6" style="margin-bottom: 16px;">
                 <div>
                     <label style="display:block; font-size: 14px; font-weight:500; margin-bottom:6px;">Monthly Rent (LKR)</label>
-                    <input type="number" step="0.01" class="input" style="width:100%; border-radius:12px;"
+                    <input type="number" step="100" class="input" style="width:100%; border-radius:12px;"
                            name="monthly_rent" value="{{ old('monthly_rent') }}" required>
                 </div>
                 <div>

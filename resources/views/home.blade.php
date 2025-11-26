@@ -26,9 +26,12 @@
             </div>
 
             <div style="display:flex; gap:16px; flex-wrap:wrap; font-size:13px; color:var(--gray-600);">
+                
+                {{--For future feature update
                 <div>
                     ✅ Only verified users can post listings
                 </div>
+                --}}
                 <div>
                     🔍 Filter by budget, city and lifestyle
                 </div>
@@ -56,7 +59,7 @@
             <div class="profile-card" style="background: var(--dwello-surface);">
                 <p style="font-size:13px; color:var(--gray-600); margin-bottom:4px;">Flatmate highlight</p>
                 <h3 style="font-family:'Poppins',sans-serif; font-size:18px; font-weight:600; margin-bottom:4px;">
-                    Zahid · 22 · Student
+                    Avithran · 22 · Student
                 </h3>
                 <p style="font-size:14px; color:var(--gray-700); margin-bottom:8px;">
                     Budget LKR 20k–30k · Colombo 5/6/7 · Non-smoker
