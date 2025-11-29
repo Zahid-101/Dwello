@@ -38,6 +38,32 @@ body {
 
 /* Utility classes that match your HTML */
 
+.nav-link {
+    position: relative;
+    padding-bottom: 4px;
+    transition: color 0.3s ease;
+}
+
+.nav-link::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0%;
+    height: 2px;
+    background: var(--dwello-primary);
+    transition: width 0.3s ease;
+}
+
+/* Hover effect */
+.nav-link:hover {
+    color: var(--dwello-primary);
+}
+
+.nav-link:hover::after {
+    width: 100%;
+}
+
 .font-poppins {
     font-family: 'Poppins', sans-serif;
 }

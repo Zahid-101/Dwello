@@ -14,42 +14,65 @@
         </p>
     </div>
 
-    {{-- Tabs --}}
-    <div class="flex justify-center" style="margin-bottom: 32px;">
-        <div style="background: var(--gray-100); border-radius: 16px; padding: 6px;">
-            <button class="tab-button active" onclick="switchTab('matches')" id="matchesTab">
-                Get Matches
-            </button>
-            <button class="tab-button" onclick="switchTab('compare')" id="compareTab">
-                Compare Profiles
-            </button>
-        </div>
-    </div>
+
 
     {{-- Matches tab --}}
     <div class="tab-content active" id="matchesContent">
-        {{-- Simple filters bar (visual only for now) --}}
-        <div style="background: white; border-radius: 16px; padding: 20px; margin-bottom: 32px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center" style="gap: 16px;">
-                    <select class="input" style="border-radius: 12px;">
-                        <option>All Locations</option>
-                    </select>
-                    <select class="input" style="border-radius: 12px;">
-                        <option>All Budgets</option>
-                    </select>
-                    <select class="input" style="border-radius: 12px;">
-                        <option>Compatibility: 70%+</option>
-                    </select>
-                </div>
-                <div class="flex items-center" style="gap: 12px;">
-                    <span style="color: var(--gray-600); font-size: 14px;">Sort by:</span>
-                    <select class="input" style="border-radius: 12px;">
-                        <option>Best Match</option>
-                    </select>
-                </div>
-            </div>
+        {{-- Filters bar --}}
+<div style="background: white; border-radius: 16px; padding: 20px; margin-bottom: 32px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+    <form method="GET" action="{{ route('roommates.index') }}" class="flex items-center justify-between" style="gap: 16px; flex-wrap: wrap;">
+        <div class="flex items-center" style="gap: 12px; flex-wrap: wrap;">
+            <input
+                type="text"
+                name="city"
+                placeholder="Preferred city"
+                value="{{ request('city') }}"
+                class="input"
+                style="border-radius: 12px; min-width: 160px;"
+            >
+
+            <input
+                type="number"
+                step="100"
+                name="min_budget"
+                placeholder="Min budget"
+                value="{{ request('min_budget') }}"
+                class="input"
+                style="border-radius: 12px; width: 130px;"
+            >
+
+            <input
+                type="number"
+                step="100"
+                name="max_budget"
+                placeholder="Max budget"
+                value="{{ request('max_budget') }}"
+                class="input"
+                style="border-radius: 12px; width: 130px;"
+            >
+
+            <label style="display:flex; align-items:center; gap:6px; font-size:13px; color:var(--gray-600);">
+                <input type="checkbox" name="has_pets" {{ request()->boolean('has_pets') ? 'checked' : '' }}>
+                <span>Has pets</span>
+            </label>
+
+            <label style="display:flex; align-items:center; gap:6px; font-size:13px; color:var(--gray-600);">
+                <input type="checkbox" name="is_smoker" {{ request()->boolean('is_smoker') ? 'checked' : '' }}>
+                <span>Smoker</span>
+            </label>
         </div>
+
+        <div class="flex items-center" style="gap: 10px;">
+            <button type="submit" class="btn btn-primary" style="border-radius: 12px; padding: 8px 16px;">
+                Apply
+            </button>
+            <a href="{{ route('roommates.index') }}" class="btn btn-outline" style="border-radius: 12px; padding: 8px 16px;">
+                Clear
+            </a>
+        </div>
+    </form>
+</div>
+
 
         {{-- Profiles grid --}}
         <div class="grid grid-3 gap-6" style="margin-bottom: 32px;">
@@ -75,7 +98,7 @@
                         </p>
                     </div>
 
-                    {{-- Compatibility ring (fake but stable, only uses this profile) --}}
+                    {{-- Compatibility ring (fake but stable, only uses this profile) --
                     @php
                         $base = 70;
                         if ($profile->budget_min || $profile->budget_max) $base += 10;
@@ -86,7 +109,7 @@
                         $circumference = 339.3;
                         $offset = $circumference - ($compatibility / 100) * $circumference;
                     @endphp
-
+                    }}
                     <div class="compatibility-ring" style="margin-bottom: 20px;">
                         <svg width="120" height="120">
                             <circle cx="60" cy="60" r="54" stroke="#E5E7EB" stroke-width="8" fill="none"/>
@@ -131,9 +154,11 @@
                         <a href="{{ route('under-development') }}" class="btn btn-outline" style="padding: 8px 16px; font-size: 14px;">
                             View Profile
                         </a>
+                        {{--Future feature 
                         <a href="{{ route('under-development') }}" class="btn btn-primary" style="padding: 8px 16px; font-size: 14px;">
                             Message
                         </a>
+                        --}}
                     </div>
                 </div>
             @empty
@@ -166,7 +191,7 @@
 </div>
 @endsection
 
-@push('scripts')
+@push('form-scripts')
 <script>
     function switchTab(tabName) {
         document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));

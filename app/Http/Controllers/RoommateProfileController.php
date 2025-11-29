@@ -8,11 +8,34 @@ use Illuminate\Http\Request;
 class RoommateProfileController extends Controller
 {
     // List all roommate profiles
-    public function index()
+    public function index(Request $request)
     {
-        $profiles = RoommateProfile::with('user')
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+        $query = RoommateProfile::query()->with('user')->orderByDesc('created_at');
+
+        // Filter by city
+        if ($request->filled('city')) {
+            $query->where('preferred_city', 'like', '%' . $request->input('city') . '%');
+        }
+
+        // Budget range
+        if ($request->filled('min_budget')) {
+            $query->where('budget_max', '>=', (float) $request->input('min_budget'));
+        }
+
+        if ($request->filled('max_budget')) {
+            $query->where('budget_min', '<=', (float) $request->input('max_budget'));
+        }
+
+        // Pets / smoking
+        if ($request->boolean('has_pets')) {
+            $query->where('has_pets', 1);
+        }
+
+        if ($request->boolean('is_smoker')) {
+            $query->where('is_smoker', 1);
+        }
+
+        $profiles = $query->paginate(9)->withQueryString();
 
         return view('roommates.index', compact('profiles'));
     }
@@ -20,7 +43,7 @@ class RoommateProfileController extends Controller
     // Show form to create / update current user's profile
     public function create()
     {
-        $profile = auth()->user()->roommateProfile;
+        $profile = auth()->user()->roommateProfile ?? null;
 
         return view('roommates.create', compact('profile'));
     }

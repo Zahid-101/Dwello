@@ -9,7 +9,10 @@
 
     {{-- Google fonts --}}
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
-
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
     {{-- Laravel / Tailwind --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
@@ -30,15 +33,15 @@
                 </div>
 
                 <nav class="flex items-center" style="gap: 32px;">
-                    <a href="{{ route('home') }}" style="color: var(--gray-700); text-decoration: none; font-weight: 500;">Home</a>
-                    <a href="{{ route('properties.index') }}" style="color: var(--gray-700); text-decoration: none; font-weight: 500;">Search Rooms</a>
-                    <a href="{{ route('roommates.index') }}" style="color: var(--dwello-primary); text-decoration: none; font-weight: 500;">Find Flatmate</a>
+                    <a href="{{ route('home') }}" class = "nav-link" style="color: var(--gray-700); text-decoration: none; font-weight: 500;">Home</a>
+                    <a href="{{ route('properties.index') }}" class = "nav-link"  style="color: var(--gray-700); text-decoration: none; font-weight: 500;">Search Rooms</a>
+                    <a href="{{ route('roommates.index') }}" class = "nav-link" style="color: var(--gray-700); text-decoration: none; font-weight: 500;">Find Flatmate</a>
 
-                    {{-- Not built yet → send to under-development --}}
+                    {{-- Not built yet → send to under-development 
                     <a href="{{ route('under-development') }}" style="color: var(--gray-700); text-decoration: none; font-weight: 500;">Messages</a>
-
+                    --}}
                     @auth
-                        <a href="{{ route('roommate-profiles.create') }}" style="color: var(--gray-700); text-decoration: none; font-weight: 500;">Profile</a>
+                     <a href="{{ route('properties.create') }}" class = "nav-link"  style="color: var(--gray-700); text-decoration: none; font-weight: 500;">Create Listing</a>
                     @endauth
                 </nav>
 
@@ -49,9 +52,24 @@
                             Login
                         </button>
                     @else
-                        <span style="font-size: 14px; color: var(--gray-700);">
-                            {{ Auth::user()->name }}
-                        </span>
+                    @auth
+                       <a href="{{ route('roommate-profiles.create') }}" span style="
+    font-size: 14px; 
+    font-weight: 600; 
+    color: var(--dwello-primary); 
+    border: 2px solid var(--dwello-primary); 
+    padding: 6px 16px; 
+    border-radius: 20px; 
+    box-shadow: 0 0 10px rgba(0,0,0,0.05); /* Subtle glow */
+    transition: all 0.3s ease;
+">
+    {{ Auth::user()->name }}
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 16px; height: 16px; margin-left: 6px; display: inline-block; vertical-align: text-bottom;">
+  <path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clip-rule="evenodd" />
+</svg>
+</span>
+</a>
+@endauth
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
                             <button class="btn btn-outline" type="submit">Logout</button>
@@ -108,7 +126,10 @@
             </div>
         </div>
     </footer>
-
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    {{-- Page-specific scripts (properties map, roommates tabs, etc.) --}}
     @stack('scripts')
+    @stack('map-scripts')
+    @stack('form-scripts')
 </body>
 </html>
