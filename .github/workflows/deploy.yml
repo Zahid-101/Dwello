@@ -16,6 +16,17 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: 8.2
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install NPM Dependencies
+        run: npm ci
+
+      - name: Build Frontend Assets
+        run: npm run build
 
       - name: Install Dependencies
         run: composer install --no-interaction --prefer-dist
