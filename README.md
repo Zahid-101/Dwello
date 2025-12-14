@@ -1,5 +1,5 @@
-<<p align="center">
-  <img src="assets/logo.svg" width="64" height="64" alt="Dwello logo">
+<p align="center">
+  <img src="logo.svg" width="64" height="64" alt="Dwello logo">
 </p>
 
 <h1 align="center">Dwello</h1>
