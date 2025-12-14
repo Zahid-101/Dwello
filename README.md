@@ -1,20 +1,20 @@
 <p align="center">
-  <div style="
+  <span style="
+    display: inline-block;
     width: 40px;
     height: 40px;
     background: #F4991A;
-    border-radius: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 40px;
+    color: white;
+    font-weight: bold;
+    font-size: 18px;
   ">
-    <span style="
-      color: white;
-      font-weight: bold;
-      font-size: 18px;
-    ">D</span>
-  </div>
+    D
+  </span>
 </p>
+
 
 
 #Have npm & composer installed 
