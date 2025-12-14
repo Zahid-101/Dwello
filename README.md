@@ -1,7 +1,10 @@
-<p align="center"><div style="width: 40px; height: 40px; background: var(--dwello-primary); border-radius: 20px; display: flex; align-items: center; justify-content: center;">
-                        <span style="color: white; font-family: 'Poppins', sans-serif; font-weight: bold; font-size: 18px;">D</span>
-                    </div>
+<p align="center">
+  <img src="logo.svg" width="64" height="64" alt="Dwello logo">
 </p>
+
+<h1 align="center">Dwello</h1>
+
+
 
 #Have npm & composer installed 
 
