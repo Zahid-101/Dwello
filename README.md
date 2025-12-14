@@ -10,7 +10,7 @@
 
 
 #On 1 terminal 
-nmp i
+npm i
 npm run dev
 #On another termimnal
 php artisan key:generate
