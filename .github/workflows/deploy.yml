@@ -25,7 +25,7 @@ jobs:
 
       - name: Deploy to Server
         uses: appleboy/ssh-action@v0.1.10
-        script:
+        with:
           host: ${{ secrets.DWELLO_IP }}
           username: ${{ secrets.DWELLO_USER }}
           key: ${{ secrets.DWELLO_KEY }}
