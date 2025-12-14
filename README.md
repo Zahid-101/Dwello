@@ -1,19 +1,8 @@
-<p align="center">
-  <span style="
-    display: inline-block;
-    width: 40px;
-    height: 40px;
-    background: #F4991A;
-    border-radius: 50%;
-    text-align: center;
-    line-height: 40px;
-    color: white;
-    font-weight: bold;
-    font-size: 18px;
-  ">
-    D
-  </span>
+<<p align="center">
+  <img src="assets/logo.svg" width="64" height="64" alt="Dwello logo">
 </p>
+
+<h1 align="center">Dwello</h1>
 
 
 
