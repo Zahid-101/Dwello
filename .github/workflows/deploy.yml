@@ -20,7 +20,7 @@ jobs:
       - name: Install Dependencies
         run: composer install --no-interaction --prefer-dist
 
-        - name: Copy .env
+      - name: Copy .env
         run: cp .env.example .env
 
       - name: Generate App Key
