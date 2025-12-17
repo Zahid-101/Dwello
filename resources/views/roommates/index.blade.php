@@ -151,7 +151,7 @@
 
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
                         {{-- Not built yet → under development --}}
-                        <a href="{{ route('under-development') }}" class="btn btn-outline" style="padding: 8px 16px; font-size: 14px;">
+                        <a href="{{ route('roommates.show', $profile) }}" class="btn btn-outline" style="padding: 8px 16px; font-size: 14px;">
                             View Profile
                         </a>
                         {{--Future feature 

@@ -87,18 +87,93 @@
                 </div>
             </div>
 
-            <div class="flex" style="gap: 16px; margin-bottom: 16px;">
+            <div class="flex" style="gap: 16px; margin-bottom: 24px;">
                 <label class="flex items-center" style="gap: 8px;">
-                        <input type="checkbox" name="is_smoker"
-                            {{ old('is_smoker', $profile->is_smoker ?? false) ? 'checked' : '' }}>
-                        <span style="font-size: 14px;">I smoke</span>
-                    </label>
-                    <label class="flex items-center" style="gap: 8px;">
-                        <input type="checkbox" name="has_pets"
-                            {{ old('has_pets', $profile->has_pets ?? false) ? 'checked' : '' }}>
-                        <span style="font-size: 14px;">I have pets</span>
+                    <input type="checkbox" name="is_smoker"
+                           {{ old('is_smoker', $profile->is_smoker ?? false) ? 'checked' : '' }}>
+                    <span style="font-size: 14px;">I smoke</span>
+                </label>
+                <label class="flex items-center" style="gap: 8px;">
+                    <input type="checkbox" name="has_pets"
+                           {{ old('has_pets', $profile->has_pets ?? false) ? 'checked' : '' }}>
+                    <span style="font-size: 14px;">I have pets</span>
                 </label>
             </div>
+
+            <hr style="border: 0; border-top: 1px solid var(--gray-200); margin-bottom: 24px;">
+            
+            <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 16px; color: var(--gray-900);">Compatibility Preferences</h3>
+            
+            <div style="margin-bottom: 24px;">
+                <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 12px; color: var(--gray-700);">Deal Breakers & Preferences</h4>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <label class="flex items-center gap-2">
+                        <input type="checkbox" name="pref_no_smoker" value="1" {{ old('pref_no_smoker', $profile->pref_no_smoker ?? false) ? 'checked' : '' }}>
+                        <span style="font-size: 14px; color: var(--gray-700);">Prefer Non-smokers</span>
+                    </label>
+                    <label class="flex items-center gap-2">
+                        <input type="checkbox" name="pref_pets_ok" value="1" {{ old('pref_pets_ok', $profile->pref_pets_ok ?? true) ? 'checked' : '' }}>
+                        <span style="font-size: 14px; color: var(--gray-700);">Pets OK</span>
+                    </label>
+                    <label class="flex items-center gap-2">
+                        <input type="checkbox" name="pref_same_gender_only" value="1" {{ old('pref_same_gender_only', $profile->pref_same_gender_only ?? false) ? 'checked' : '' }}>
+                        <span style="font-size: 14px; color: var(--gray-700);">Same Gender Only</span>
+                    </label>
+                    <label class="flex items-center gap-2">
+                        <input type="checkbox" name="pref_visitors_ok" value="1" {{ old('pref_visitors_ok', $profile->pref_visitors_ok ?? true) ? 'checked' : '' }}>
+                        <span style="font-size: 14px; color: var(--gray-700);">Visitors Allowed</span>
+                    </label>
+                    <label class="flex items-center gap-2">
+                        <input type="checkbox" name="pref_substance_free_required" value="1" {{ old('pref_substance_free_required', $profile->pref_substance_free_required ?? false) ? 'checked' : '' }}>
+                        <span style="font-size: 14px; color: var(--gray-700);">Substance-free Home Required</span>
+                    </label>
+                     <label class="flex items-center gap-2">
+                        <input type="checkbox" name="uses_substances" value="1" {{ old('uses_substances', $profile->uses_substances ?? false) ? 'checked' : '' }}>
+                        <span style="font-size: 14px; color: var(--gray-700);">I use substances (alcohol/etc)</span>
+                    </label>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 24px;">
+                <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 12px; color: var(--gray-700);">Lifestyle (1-5 Scale)</h4>
+                <p style="font-size: 12px; color: var(--gray-500); margin-bottom: 16px;">1 = Low/Quiet/Messy, 5 = High/Loud/My Cleanest Self</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    @foreach(['cleanliness' => 'Cleanliness', 'noise_tolerance' => 'Noise Tolerance', 'sleep_schedule' => 'Sleep Schedule (Early vs Late)', 'study_focus' => 'Study Focus', 'social_level' => 'Social Level'] as $field => $label)
+                    <div>
+                        <label style="display:block; font-size: 14px; font-weight:500; margin-bottom:6px;">{{ $label }}</label>
+                        <select name="{{ $field }}" class="input" style="width:100%; border-radius:12px;">
+                            <option value="">Select Level</option>
+                            @foreach(range(1, 5) as $val)
+                                <option value="{{ $val }}" {{ old($field, $profile->$field ?? '') == $val ? 'selected' : '' }}>{{ $val }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+
+            <div style="margin-bottom: 24px;">
+                 <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 12px; color: var(--gray-700);">Additional Details</h4>
+                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                     <div>
+                        <label style="display:block; font-size: 14px; font-weight:500; margin-bottom:6px;">Schedule Type</label>
+                        <select name="schedule_type" class="input" style="width:100%; border-radius:12px;">
+                            <option value="">Select Schedule</option>
+                            <option value="morning" {{ old('schedule_type', $profile->schedule_type ?? '') == 'morning' ? 'selected' : '' }}>Morning Person</option>
+                            <option value="night" {{ old('schedule_type', $profile->schedule_type ?? '') == 'night' ? 'selected' : '' }}>Night Owl</option>
+                            <option value="mixed" {{ old('schedule_type', $profile->schedule_type ?? '') == 'mixed' ? 'selected' : '' }}>Mixed</option>
+                        </select>
+                     </div>
+                     <div>
+                        <label style="display:block; font-size: 14px; font-weight:500; margin-bottom:6px;">Occupation / Field</label>
+                        <input type="text" name="occupation_field" class="input" style="width:100%; border-radius:12px;"
+                               value="{{ old('occupation_field', $profile->occupation_field ?? '') }}" placeholder="e.g. Student, Engineer, Artist">
+                     </div>
+                 </div>
+            </div>
+            
+            <hr style="border: 0; border-top: 1px solid var(--gray-200); margin-bottom: 24px;">
 
             <div style="margin-bottom: 24px;">
                 <label style="display:block; font-size: 14px; font-weight:500; margin-bottom:6px;">About You</label>

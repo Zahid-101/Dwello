@@ -3,10 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Models\RoommateProfile;
+use App\Models\User;
+use App\Services\CompatibilityService;
 use Illuminate\Http\Request;
 
 class RoommateProfileController extends Controller
 {
+    protected $compatibilityService;
+
+    public function __construct(CompatibilityService $compatibilityService)
+    {
+        $this->compatibilityService = $compatibilityService;
+    }
     // List all roommate profiles
     public function index(Request $request)
     {
@@ -63,6 +71,20 @@ class RoommateProfileController extends Controller
             'is_smoker'           => 'nullable|boolean',
             'has_pets'            => 'nullable|boolean',
             'bio'                 => 'nullable|string',
+            // New compatibility fields
+            'pref_no_smoker'               => 'boolean',
+            'pref_pets_ok'                 => 'boolean',
+            'pref_same_gender_only'        => 'boolean',
+            'pref_visitors_ok'             => 'boolean',
+            'pref_substance_free_required' => 'boolean',
+            'uses_substances'              => 'boolean',
+            'cleanliness'                  => 'nullable|integer|min:1|max:5',
+            'noise_tolerance'              => 'nullable|integer|min:1|max:5',
+            'sleep_schedule'               => 'nullable|integer|min:1|max:5',
+            'study_focus'                  => 'nullable|integer|min:1|max:5',
+            'social_level'                 => 'nullable|integer|min:1|max:5',
+            'schedule_type'                => 'nullable|in:morning,night,mixed',
+            'occupation_field'             => 'nullable|string|max:255',
         ]);
 
         $data['user_id'] = auth()->id();
@@ -78,5 +100,38 @@ class RoommateProfileController extends Controller
         return redirect()
             ->route('roommates.index')
             ->with('success', 'Roommate profile saved!');
+    }
+
+    // Show a specific roommate profile
+    public function show(RoommateProfile $roommateProfile)
+    {
+        $roommateProfile->load('user');
+        
+        // Calculate compatibility if user is logged in and not viewing themselves
+        $compatibility = null;
+        if (auth()->check() && auth()->user()->roommateProfile && auth()->id() !== $roommateProfile->user_id) {
+            $compatibility = $this->compatibilityService->calculate(
+                auth()->user()->roommateProfile, 
+                $roommateProfile
+            );
+        }
+
+        return view('roommates.show', compact('roommateProfile', 'compatibility'));
+    }
+
+    // API endpoint for compatibility (if needed for dynamic updates, though we passed it in show)
+    public function compatibility(User $user)
+    {
+        // $user is the target user
+        $targetProfile = $user->roommateProfile;
+        $viewerProfile = auth()->user()->roommateProfile;
+
+        if (!$targetProfile || !$viewerProfile) {
+            return response()->json(['error' => 'Profile not found'], 404);
+        }
+
+        $result = $this->compatibilityService->calculate($viewerProfile, $targetProfile);
+
+        return response()->json($result);
     }
 }

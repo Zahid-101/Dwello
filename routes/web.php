@@ -23,6 +23,9 @@ Route::get('/properties', [PropertyController::class, 'index'])
 Route::get('/roommates', [RoommateProfileController::class, 'index'])
     ->name('roommates.index');
 
+Route::get('/roommates/{roommateProfile}', [RoommateProfileController::class, 'show'])
+    ->name('roommates.show');
+
 // Generic "under development" page
 Route::view('/under-development', 'under-development')
     ->name('under-development');
@@ -42,7 +45,11 @@ Route::middleware('auth')->group(function () {
         ->name('roommate-profiles.create');
 
     Route::post('/roommate-profile', [RoommateProfileController::class, 'store'])
+
         ->name('roommate-profiles.store');
+
+    Route::get('/roommates/{user}/compatibility', [RoommateProfileController::class, 'compatibility'])
+        ->name('roommates.compatibility');
 
     // Dashboard just redirects to main app (properties)
     Route::get('/dashboard', function () {
