@@ -1,0 +1,222 @@
+/* Extracted from matching.html */
+:root {
+    --dwello-bg: #F9F5F0;
+    --dwello-surface: #F2EAD3;
+    --dwello-primary: #F4991A;
+    --dwello-primary-hover: #D88512;
+    --dwello-accent: #344F1F;
+    --dwello-accent-hover: #2A3E18;
+    --text-primary: #111827;
+    --text-muted: #6B7280;
+    --white: #FFFFFF;
+    --gray-50: #F9FAFB;
+    --gray-100: #F3F4F6;
+    --gray-200: #E5E7EB;
+    --gray-300: #D1D5DB;
+    --gray-500: #6B7280;
+    --gray-600: #4B5563;
+    --gray-700: #374151;
+    --gray-900: #111827;
+    --green-500: #10B981;
+    --green-600: #059669;
+    --amber-500: #F59E0B;
+    --red-500: #EF4444;
+}
+
+body.matching-page {
+    background-color: var(--dwello-bg);
+    font-family: 'Inter', sans-serif;
+    color: var(--text-primary);
+    line-height: 1.6;
+}
+
+.font-poppins {
+    font-family: 'Poppins', sans-serif;
+}
+
+.matching-page .container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+.matching-page .btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 20px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+}
+
+.matching-page .btn-primary {
+    background-color: var(--dwello-primary);
+    color: white;
+}
+
+.matching-page .btn-primary:hover {
+    background-color: var(--dwello-primary-hover);
+}
+
+.matching-page .btn-outline {
+    background-color: transparent;
+    color: var(--dwello-primary);
+    border: 2px solid var(--dwello-primary);
+}
+
+.matching-page .btn-outline:hover {
+    background-color: var(--dwello-primary);
+    color: white;
+}
+
+.matching-page .flex {
+    display: flex;
+}
+
+.matching-page .grid {
+    display: grid;
+}
+
+.matching-page .grid-3 { grid-template-columns: repeat(3, 1fr); }
+.matching-page .grid-2 { grid-template-columns: repeat(2, 1fr); }
+.matching-page .grid-4 { grid-template-columns: repeat(4, 1fr); }
+
+.matching-page .gap-6 { gap: 24px; }
+.matching-page .gap-8 { gap: 32px; }
+
+.matching-page .items-center {
+    align-items: center;
+}
+
+.matching-page .justify-between {
+    justify-content: space-between;
+}
+
+.matching-page .justify-center {
+    justify-content: center;
+}
+
+.matching-page .text-center {
+    text-align: center;
+}
+
+.matching-page .compatibility-ring {
+    width: 120px;
+    height: 120px;
+    position: relative;
+    margin: 0 auto;
+}
+
+.matching-page .compatibility-ring svg {
+    transform: rotate(-90deg);
+}
+
+.matching-page .compatibility-ring .percentage {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--gray-900);
+}
+
+.matching-page .profile-card {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    padding: 24px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.matching-page .profile-card:hover {
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    transform: translateY(-4px);
+}
+
+.matching-page .tab-button {
+    padding: 12px 24px;
+    background: none;
+    border: none;
+    border-radius: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: var(--gray-600);
+    display: flex;
+    align-items: center;
+}
+
+.matching-page .tab-button.active {
+    background: var(--dwello-primary);
+    color: white;
+}
+
+.matching-page .tab-content {
+    display: none;
+}
+
+.matching-page .tab-content.active {
+    display: block;
+}
+
+.matching-page .compatibility-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    gap: 6px;
+}
+
+.matching-page .chip-match {
+    background: #D1FAE5;
+    color: #065F46;
+}
+
+.matching-page .chip-partial {
+    background: #FEF3C7;
+    color: #92400E;
+}
+
+.matching-page .chip-conflict {
+    background: #FEE2E2;
+    color: #991B1B;
+}
+
+.matching-page .saved-indicator {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 32px;
+    height: 32px;
+    background: var(--gray-400);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.matching-page .saved-indicator.saved {
+    background: var(--red-500);
+}
+
+.matching-page .saved-indicator:hover {
+    transform: scale(1.1);
+}
+
+/* Header/Footer specific overrides if needed, assuming they're inside .matching-page or we use these classes for the specific header/footer in the view */
+
+@media (max-width: 768px) {
+    .matching-page .grid-3, .matching-page .grid-2, .matching-page .grid-4 {
+        grid-template-columns: 1fr;
+    }
+}
