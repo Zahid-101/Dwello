@@ -70,10 +70,12 @@
                             <option value="high" {{ request('budget_range') == 'high' ? 'selected' : '' }}>₨50k+</option>
                         </select>
 
-                        <select style="padding: 8px 12px; border: 1px solid var(--gray-300); border-radius: 8px; font-size: 14px;">
-                            <option>Compatibility: 70%+</option>
-                            <option>Compatibility: 80%+</option>
-                            <option>Compatibility: 90%+</option>
+                        {{-- Semantic only for now --}}
+                        <select name="min_compatibility" style="padding: 8px 12px; border: 1px solid var(--gray-300); border-radius: 8px; font-size: 14px;">
+                            <option value="">Any Compatibility</option>
+                            <option value="70">Compatibility: 70%+</option>
+                            <option value="80">Compatibility: 80%+</option>
+                            <option value="90">Compatibility: 90%+</option>
                         </select>
                         
                         <button type="submit" class="btn btn-primary" style="padding: 8px 16px; font-size: 14px;">
@@ -82,10 +84,11 @@
                     </div>
                     <div class="flex items-center" style="gap: 12px;">
                         <span style="color: var(--gray-600); font-size: 14px;">Sort by:</span>
-                        <select style="padding: 8px 12px; border: 1px solid var(--gray-300); border-radius: 8px; font-size: 14px;">
-                            <option>Best Match</option>
-                            <option>Newest First</option>
-                            <option>Budget: Low to High</option>
+                        <select name="sort_by" style="padding: 8px 12px; border: 1px solid var(--gray-300); border-radius: 8px; font-size: 14px;" onchange="this.form.submit()">
+                            <option value="best_match" {{ request('sort_by', 'best_match') == 'best_match' ? 'selected' : '' }}>Best Match</option>
+                            <option value="newest" {{ request('sort_by') == 'newest' ? 'selected' : '' }}>Newest First</option>
+                            <option value="budget_low" {{ request('sort_by') == 'budget_low' ? 'selected' : '' }}>Budget: Low to High</option>
+                            <option value="budget_high" {{ request('sort_by') == 'budget_high' ? 'selected' : '' }}>Budget: High to Low</option>
                         </select>
                     </div>
                 </form>
@@ -95,13 +98,18 @@
             <div class="grid grid-3 gap-6" style="margin-bottom: 32px;">
                 @forelse ($profiles as $profile)
                     @php
-                        // Maintain existing compatibility calculation - simplified for view
-                        $base = 70;
-                        if ($profile->budget_min || $profile->budget_max) $base += 10;
-                        if ($profile->preferred_city) $base += 5;
-                        if ($profile->has_pets) $base -= 2;
-                        if ($profile->is_smoker) $base -= 3;
-                        $compatibility = max(50, min($base, 95));
+                        // Use calculated score if available (from Controller), otherwise fallback to heuristic or default
+                        if (isset($profile->compatibility_score) && !is_null($profile->compatibility_score)) {
+                            $compatibility = $profile->compatibility_score;
+                        } else {
+                            // Fallback for guests or if no score
+                            $base = 70;
+                            if ($profile->budget_min || $profile->budget_max) $base += 10;
+                            if ($profile->preferred_city) $base += 5;
+                            if ($profile->has_pets) $base -= 2;
+                            if ($profile->is_smoker) $base -= 3;
+                            $compatibility = max(50, min($base, 95));
+                        }
                         
                         // Calculate ring offset
                         $circumference = 339.3;
@@ -174,7 +182,11 @@
                             <div class="text-center">
                                 <div style="font-size: 20px; font-weight: bold; color: var(--dwello-primary);">
                                     @if($profile->budget_max)
-                                        ₨{{ number_format($profile->budget_max/1000, 0) }}K
+                                        @if($profile->budget_min && $profile->budget_min < $profile->budget_max)
+                                            ₨{{ number_format($profile->budget_min/1000, 0) }}K - {{ number_format($profile->budget_max/1000, 0) }}K
+                                        @else
+                                            ₨{{ number_format($profile->budget_max/1000, 0) }}K
+                                        @endif
                                     @else
                                         N/A
                                     @endif

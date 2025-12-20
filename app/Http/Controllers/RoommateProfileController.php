@@ -18,20 +18,26 @@ class RoommateProfileController extends Controller
     // List all roommate profiles
     public function index(Request $request)
     {
-        $query = RoommateProfile::query()->with('user')->orderByDesc('created_at');
+        $query = RoommateProfile::query()->with('user');
 
         // Filter by city
         if ($request->filled('city')) {
             $query->where('preferred_city', 'like', '%' . $request->input('city') . '%');
         }
 
-        // Budget range
-        if ($request->filled('min_budget')) {
-            $query->where('budget_max', '>=', (float) $request->input('min_budget'));
-        }
-
-        if ($request->filled('max_budget')) {
-            $query->where('budget_min', '<=', (float) $request->input('max_budget'));
+        // Budget range logic
+        if ($request->filled('budget_range')) {
+            switch ($request->input('budget_range')) {
+                case 'low': // 10k - 25k
+                    $query->where('budget_max', '>=', 10000)->where('budget_min', '<=', 25000);
+                    break;
+                case 'medium': // 25k - 50k
+                    $query->where('budget_max', '>=', 25000)->where('budget_min', '<=', 50000);
+                    break;
+                case 'high': // 50k+
+                    $query->where('budget_max', '>=', 50000);
+                    break;
+            }
         }
 
         // Pets / smoking
@@ -43,7 +49,86 @@ class RoommateProfileController extends Controller
             $query->where('is_smoker', 1);
         }
 
-        $profiles = $query->paginate(9)->withQueryString();
+        // Get all matching profiles first (limit to reasonable max if needed, e.g. 200)
+        $profilesCollection = $query->get();
+
+        // Calculate compatibility & Filter
+        $viewerProfile = auth()->user()->roommateProfile ?? null;
+        
+        $profilesCollection = $profilesCollection->map(function ($profile) use ($viewerProfile) {
+            // Skip self score
+            if (auth()->id() === $profile->user_id) {
+                $profile->compatibility_score = null;
+                return $profile;
+            }
+
+            if ($viewerProfile) {
+                $result = $this->compatibilityService->calculate($viewerProfile, $profile);
+                $profile->compatibility_score = $result['score'];
+                $profile->compatibility_data = $result;
+            } else {
+                // Heuristic for guests
+                $base = 70;
+                if ($profile->preferred_city) $base += 5;
+                $profile->compatibility_score = $base; // Simplified
+            }
+            return $profile;
+        });
+
+        // Filter by Compatibility
+        if ($request->filled('min_compatibility')) {
+            $minScore = (int) $request->input('min_compatibility');
+            $profilesCollection = $profilesCollection->filter(function ($profile) use ($minScore) {
+                // If no score (e.g. self), keep it? Or hide? Let's hide self in matches usually.
+                // But for now, if score is null, filter out if strict.
+                return $profile->compatibility_score >= $minScore;
+            });
+        }
+        
+        // Remove self from matches list generally?
+        if (auth()->check()) {
+            $profilesCollection = $profilesCollection->filter(function ($profile) {
+                return $profile->user_id !== auth()->id();
+            });
+        }
+
+        // Sorting
+        $sortBy = $request->input('sort_by', 'best_match');
+        switch ($sortBy) {
+            case 'budget_low':
+                $profilesCollection = $profilesCollection->sortBy(function ($profile) {
+                    return (int) $profile->budget_max;
+                });
+                break;
+            case 'budget_high':
+                $profilesCollection = $profilesCollection->sortByDesc(function ($profile) {
+                    return (int) $profile->budget_max;
+                });
+                break;
+            case 'newest':
+                $profilesCollection = $profilesCollection->sortByDesc('created_at');
+                break;
+            case 'best_match':
+            default:
+                // Sort by compatibility score, then by created_at as tie breaker
+                $profilesCollection = $profilesCollection->sortByDesc(function ($profile) {
+                    return [(int) $profile->compatibility_score, $profile->created_at];
+                });
+                break;
+        }
+
+        // Manual Pagination
+        $page = \Illuminate\Pagination\Paginator::resolveCurrentPage() ?: 1;
+        $perPage = 9;
+        $items = $profilesCollection->values()->forPage($page, $perPage);
+        
+        $profiles = new \Illuminate\Pagination\LengthAwarePaginator(
+            $items,
+            $profilesCollection->count(),
+            $perPage,
+            $page,
+            ['path' => \Illuminate\Pagination\Paginator::resolveCurrentPath(), 'query' => $request->query()]
+        );
 
         return view('roommates.index', compact('profiles'));
     }
