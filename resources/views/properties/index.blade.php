@@ -158,6 +158,16 @@
                                                 View Details →
                                             </button>
                                         </div>
+                                        <div style="margin-top: 12px;">
+                                            @if(auth()->id() !== $property->user_id)
+                                                <form action="{{ route('conversations.startProperty', $property) }}" method="POST">
+                                                    @csrf
+                                                    <button type="submit" class="w-full bg-blue-600 text-white rounded-lg py-2 px-4 hover:bg-blue-700 transition text-sm font-medium">
+                                                        Message Landlord
+                                                    </button>
+                                                </form>
+                                            @endif
+                                        </div>
                                     </div>
                                 </div>
                             </div>

@@ -23,6 +23,10 @@
                     <x-nav-link :href="route('roommates.index')" :active="request()->routeIs('roommates.*')">
                         {{ __('Roommates') }}
                     </x-nav-link>
+
+                    <x-nav-link :href="route('messages.index')" :active="request()->routeIs('messages.*')">
+                        {{ __('Messages') }}
+                    </x-nav-link>
                 </div>
             </div>
 

@@ -11,14 +11,48 @@ function switchTab(tabName) {
 }
 
 // Save/unsave functionality
+// Save/unsave functionality
 function toggleSaved(element) {
+    // Standard visual feedback immediately for responsiveness
     element.classList.toggle('saved');
-
-    // Add a little animation feedback
     element.style.transform = 'scale(1.2)';
-    setTimeout(() => {
-        element.style.transform = 'scale(1)';
-    }, 200);
+    setTimeout(() => { element.style.transform = 'scale(1)'; }, 200);
+
+    // Get Profile ID (assuming parent has data-id or similar, or we pass it)
+    // The element is usually the .saved-indicator div inside .profile-card
+    // Let's find the profile ID from the card context
+    const card = element.closest('.profile-card');
+    // We didn't explicitly add data-id to profile-card in index.blade.php, let's fix that too.
+    // Assuming data-id is there or we can find it.
+    // Wait, the index loop is likely needed to be updated to pass ID to this function or set on element.
+
+    // Better strategy: Expect the element to have data-id
+    const profileId = element.dataset.id;
+
+    if (!profileId) {
+        console.warn('No profile ID found for favorite toggle');
+        return;
+    }
+
+    // Call API
+    fetch(`/favorites/${profileId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json'
+        }
+    })
+        .then(res => res.json())
+        .then(data => {
+            // Sync state if server disagrees (optional, but good for robustness)
+            if (data.saved) {
+                element.classList.add('saved');
+            } else {
+                element.classList.remove('saved');
+            }
+        })
+        .catch(err => console.error('Error toggling favorite:', err));
 }
 
 // Show comparison results

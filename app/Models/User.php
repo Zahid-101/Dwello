@@ -57,4 +57,10 @@ class User extends Authenticatable
     {
         return $this->hasOne(RoommateProfile::class);
     }
+
+    public function favorites()
+    {
+        return $this->belongsToMany(RoommateProfile::class, 'favorites', 'user_id', 'roommate_profile_id')
+            ->withTimestamps();
+    }
 }

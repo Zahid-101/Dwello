@@ -4,6 +4,9 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PropertyController;
 use App\Http\Controllers\RoommateProfileController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ConversationController;
+use App\Http\Controllers\MessageController;
+use App\Http\Controllers\FavoriteController;
 
 /*
 |--------------------------------------------------------------------------
@@ -59,6 +62,19 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // Favorites
+    Route::get('/favorites', [FavoriteController::class, 'index'])->name('favorites.index');
+    Route::post('/favorites/{roommateProfile}', [FavoriteController::class, 'toggle'])->name('favorites.toggle');
+
+    // Messaging Routes
+    Route::get('/messages', [ConversationController::class, 'index'])->name('messages.index');
+    Route::get('/messages/{conversation}', [ConversationController::class, 'show'])->name('messages.show');
+    Route::post('/messages/{conversation}', [MessageController::class, 'store'])->name('messages.store');
+    Route::get('/messages/{conversation}/poll', [MessageController::class, 'poll'])->name('messages.poll');
+
+    Route::post('/properties/{property}/message', [ConversationController::class, 'startProperty'])->name('conversations.startProperty');
+    Route::post('/roommates/{user}/message', [ConversationController::class, 'startRoommate'])->name('conversations.startRoommate');
 });
 
 // Breeze auth routes (login, register, logout, etc.)

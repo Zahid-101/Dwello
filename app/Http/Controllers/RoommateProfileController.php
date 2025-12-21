@@ -144,6 +144,17 @@ class RoommateProfileController extends Controller
     // Save or update the roommate profile
     public function store(Request $request)
     {
+        // Sanitize boolean fields before validation
+        $booleans = [
+            'is_smoker', 'has_pets', 
+            'pref_no_smoker', 'pref_pets_ok', 'pref_same_gender_only', 
+            'pref_visitors_ok', 'pref_substance_free_required', 'uses_substances'
+        ];
+
+        foreach ($booleans as $field) {
+            $request->merge([$field => $request->boolean($field) ? 1 : 0]);
+        }
+
         $data = $request->validate([
             'display_name'        => 'required|string|max:255',
             'age'                 => 'nullable|integer|min:16|max:100',
@@ -173,8 +184,7 @@ class RoommateProfileController extends Controller
         ]);
 
         $data['user_id'] = auth()->id();
-        $data['is_smoker'] = $request->has('is_smoker');
-        $data['has_pets']  = $request->has('has_pets');
+        // Booleans are already sanitized and included in $data by validate() because of merge()
 
         // Create or update the user's profile
         RoommateProfile::updateOrCreate(

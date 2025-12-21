@@ -8,9 +8,24 @@
         <h2 style="font-size: 24px; font-family: 'Poppins', sans-serif; font-weight: 600; margin-bottom: 16px;">
             My Roommate Profile
         </h2>
-        <p style="color: var(--gray-600); margin-bottom: 24px;">
             Tell others about yourself so we can match you with compatible flatmates.
         </p>
+
+        {{-- Quick Actions Toolbar --}}
+        <div class="flex gap-4 mb-6">
+            <a href="{{ route('messages.index') }}" class="flex-1 bg-blue-50 text-blue-600 rounded-xl p-4 flex items-center justify-center gap-2 hover:bg-blue-100 transition font-medium border border-blue-100">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
+                </svg>
+                Inbox
+            </a>
+            <a href="{{ route('favorites.index') }}" class="flex-1 bg-pink-50 text-pink-600 rounded-xl p-4 flex items-center justify-center gap-2 hover:bg-pink-100 transition font-medium border border-pink-100">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                </svg>
+                Favorites
+            </a>
+        </div>
 
         @if ($errors->any())
             <div style="background: #FEE2E2; color: #991B1B; padding: 12px 16px; border-radius: 12px; margin-bottom: 16px; font-size: 14px;">
@@ -89,12 +104,12 @@
 
             <div class="flex" style="gap: 16px; margin-bottom: 24px;">
                 <label class="flex items-center" style="gap: 8px;">
-                    <input type="checkbox" name="is_smoker"
+                    <input type="checkbox" name="is_smoker" value="1"
                            {{ old('is_smoker', $profile->is_smoker ?? false) ? 'checked' : '' }}>
                     <span style="font-size: 14px;">I smoke</span>
                 </label>
                 <label class="flex items-center" style="gap: 8px;">
-                    <input type="checkbox" name="has_pets"
+                    <input type="checkbox" name="has_pets" value="1"
                            {{ old('has_pets', $profile->has_pets ?? false) ? 'checked' : '' }}>
                     <span style="font-size: 14px;">I have pets</span>
                 </label>
