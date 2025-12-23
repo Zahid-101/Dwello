@@ -55,13 +55,12 @@
             <div style="background: white; border-radius: 16px; padding: 20px; margin-bottom: 32px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
                 <form method="GET" action="{{ route('roommates.index') }}" class="flex items-center justify-between" style="flex-wrap: wrap; gap: 16px;">
                     <div class="flex items-center" style="gap: 16px; flex-wrap: wrap;">
-                        <input
-                            type="text"
-                            name="city"
-                            value="{{ request('city') }}"
-                            placeholder="City Filter"
-                            style="padding: 8px 12px; border: 1px solid var(--gray-300); border-radius: 8px; font-size: 14px;"
-                        >
+                        <select name="city" style="padding: 8px 12px; border: 1px solid var(--gray-300); border-radius: 8px; font-size: 14px;">
+                            <option value="">Any City</option>
+                            @foreach(config('cities') as $city)
+                                <option value="{{ $city }}" {{ request('city') == $city ? 'selected' : '' }}>{{ $city }}</option>
+                            @endforeach
+                        </select>
                         
                         <select name="budget_range" style="padding: 8px 12px; border: 1px solid var(--gray-300); border-radius: 8px; font-size: 14px;">
                             <option value="">All Budgets</option>

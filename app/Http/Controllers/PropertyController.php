@@ -58,22 +58,30 @@ class PropertyController extends Controller
     }
 
     /**
+     * Show property details.
+     */
+    public function show(Property $property)
+    {
+        return view('properties.show', compact('property'));
+    }
+
+    /**
      * Store property (you already had this – keep your existing version if different).
      */
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'title'         => 'required|string|max:255',
-            'description'   => 'nullable|string',
-            'city'          => 'required|string|max:255',
+            'title'         => 'required|string|max:100',
+            'description'   => 'nullable|string|max:2000',
+            'city'          => 'required|string|max:50',
             'address'       => 'required|string|max:255',
-            'monthly_rent'  => 'required|numeric|min:0',
-            'bedrooms'      => 'required|integer|min:1',
-            'bathrooms'     => 'required|integer|min:1',
+            'monthly_rent'  => 'required|numeric|min:0|max:10000000', // Cap at 10 million for safety
+            'bedrooms'      => 'required|integer|min:1|max:20',
+            'bathrooms'     => 'required|integer|min:1|max:20',
             'property_type' => 'required|in:room,apartment,house',
-            'available_from'=> 'nullable|date',
-            'latitude'      => 'nullable|numeric',
-            'longitude'     => 'nullable|numeric',
+            'available_from'=> 'nullable|date|after_or_equal:today',
+            'latitude'      => 'nullable|numeric|between:-90,90',
+            'longitude'     => 'nullable|numeric|between:-180,180',
         ]);
 
         $validated['user_id'] = auth()->id();

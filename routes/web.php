@@ -26,6 +26,8 @@ Route::get('/properties', [PropertyController::class, 'index'])
 Route::get('/roommates', [RoommateProfileController::class, 'index'])
     ->name('roommates.index');
 
+
+
 Route::get('/roommates/{roommateProfile}', [RoommateProfileController::class, 'show'])
     ->name('roommates.show');
 
@@ -36,20 +38,25 @@ Route::view('/under-development', 'under-development')
 // Routes that require login
 Route::middleware('auth')->group(function () {
 
-    // Property creation
-    Route::get('/properties/create', [PropertyController::class, 'create'])
-        ->name('properties.create');
+    // Role Selection
+    Route::get('/select-role', [\App\Http\Controllers\RoleSelectionController::class, 'show'])->name('role.select');
+    Route::post('/select-role', [\App\Http\Controllers\RoleSelectionController::class, 'store'])->name('role.store');
 
-    Route::post('/properties', [PropertyController::class, 'store'])
-        ->name('properties.store');
+    // Property creation (Landlords only)
+    Route::middleware(['role:landlord'])->group(function () {
+        Route::get('/properties/create', [PropertyController::class, 'create'])
+            ->name('properties.create');
+        Route::post('/properties', [PropertyController::class, 'store'])
+            ->name('properties.store');
+    });
 
-    // Roommate profile create/update
-    Route::get('/roommate-profile/create', [RoommateProfileController::class, 'create'])
-        ->name('roommate-profiles.create');
-
-    Route::post('/roommate-profile', [RoommateProfileController::class, 'store'])
-
-        ->name('roommate-profiles.store');
+    // Roommate profile create/update (Seekers only)
+    Route::middleware(['role:seeker'])->group(function () {
+        Route::get('/roommate-profile/create', [RoommateProfileController::class, 'create'])
+            ->name('roommate-profiles.create');
+        Route::post('/roommate-profile', [RoommateProfileController::class, 'store'])
+            ->name('roommate-profiles.store');
+    });
 
     Route::get('/roommates/{user}/compatibility', [RoommateProfileController::class, 'compatibility'])
         ->name('roommates.compatibility');
@@ -76,6 +83,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/properties/{property}/message', [ConversationController::class, 'startProperty'])->name('conversations.startProperty');
     Route::post('/roommates/{user}/message', [ConversationController::class, 'startRoommate'])->name('conversations.startRoommate');
 });
+
+// Wildcards (must be last)
+Route::get('/properties/{property}', [PropertyController::class, 'show'])
+    ->name('properties.show');
+
 
 // Breeze auth routes (login, register, logout, etc.)
 require __DIR__ . '/auth.php';

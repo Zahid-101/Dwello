@@ -40,8 +40,12 @@
             <div class="grid grid-2 gap-6" style="margin-bottom: 16px;">
                 <div>
                     <label style="display:block; font-size: 14px; font-weight:500; margin-bottom:6px;">City</label>
-                    <input class="input" id="city" style="width:100%; border-radius:12px;"
-                           name="city" value="{{ old('city') }}" required>
+                    <select class="input" id="city" style="width:100%; border-radius:12px;" name="city" required>
+                        <option value="">Select City</option>
+                        @foreach(config('cities') as $city)
+                            <option value="{{ $city }}" {{ old('city') == $city ? 'selected' : '' }}>{{ $city }}</option>
+                        @endforeach
+                    </select>
                 </div>
                 <div>
                     <label style="display:block; font-size: 14px; font-weight:500; margin-bottom:6px;">Address</label>
@@ -53,17 +57,17 @@
             <div class="grid grid-3 gap-6" style="margin-bottom: 16px;">
                 <div>
                     <label style="display:block; font-size: 14px; font-weight:500; margin-bottom:6px;">Monthly Rent (LKR)</label>
-                    <input type="number" step="100" class="input" style="width:100%; border-radius:12px;"
+                    <input type="number" step="100" min="0" class="input" style="width:100%; border-radius:12px;"
                            name="monthly_rent" value="{{ old('monthly_rent') }}" required>
                 </div>
                 <div>
                     <label style="display:block; font-size: 14px; font-weight:500; margin-bottom:6px;">Bedrooms</label>
-                    <input type="number" class="input" style="width:100%; border-radius:12px;"
+                    <input type="number" min="0" class="input" style="width:100%; border-radius:12px;"
                            name="bedrooms" value="{{ old('bedrooms',1) }}" required>
                 </div>
                 <div>
                     <label style="display:block; font-size: 14px; font-weight:500; margin-bottom:6px;">Bathrooms</label>
-                    <input type="number" class="input" style="width:100%; border-radius:12px;"
+                    <input type="number" min="0" class="input" style="width:100%; border-radius:12px;"
                            name="bathrooms" value="{{ old('bathrooms',1) }}" required>
                 </div>
             </div>
@@ -88,7 +92,12 @@
             <div class="grid grid-2 gap-6" style="margin-bottom: 24px;">
                     <input type="hidden" name="latitude" id="latitude" value="{{ old('latitude') }}">
                     <input type="hidden" name="longitude" id="longitude" value="{{ old('longitude') }}">
-                </div>
+            </div>
+            
+            <div style="margin-bottom: 24px;">
+                <label style="display:block; font-size: 14px; font-weight:500; margin-bottom:6px;">Location on Map (Click to set)</label>
+                <div id="map" style="height: 300px; width: 100%; border-radius: 12px; z-index: 1;"></div>
+            </div>
 
             <div class="flex justify-end" style="gap: 12px;">
                 <a href="{{ route('properties.index') }}" class="btn btn-outline">Cancel</a>
@@ -102,125 +111,110 @@
 @push('form-scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    console.log('🔍 Geocoding script starting...');
-    
+    // Block 'e', 'E', '+', '-' from number inputs
+    const numberInputs = document.querySelectorAll('input[type="number"]');
+    numberInputs.forEach(input => {
+        input.addEventListener('keydown', function(e) {
+            if (['e', 'E', '+', '-'].includes(e.key)) {
+                e.preventDefault();
+            }
+        });
+    });
+
+    console.log('Starting map & geocoding script...');
+
     const cityInput = document.getElementById('city');
     const addressInput = document.getElementById('address');
     const latInput = document.getElementById('latitude');
     const lngInput = document.getElementById('longitude');
     
-    // Check if form exists
-    if (!cityInput || !addressInput) {
-        console.log('⚠️ Form inputs not found, exiting');
-        return;
+    // Default Colombo
+    let mapCenter = [6.9271, 79.8612]; 
+    let mapZoom = 13;
+
+    // Check if we have existing values (old input) to center map
+    if (latInput.value && lngInput.value) {
+        mapCenter = [parseFloat(latInput.value), parseFloat(lngInput.value)];
+         // visual map center logic handled below
     }
-    
-    console.log('✅ All inputs found:', {
-        city: cityInput,
-        address: addressInput,
-        lat: latInput,
-        lng: lngInput
+
+    // Initialize Map
+    var map = L.map('map').setView(mapCenter, mapZoom);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '© OpenStreetMap'
+    }).addTo(map);
+
+    var marker;
+
+    // Function to set marker
+    function setMarker(lat, lng) {
+        if (marker) {
+            marker.setLatLng([lat, lng]);
+        } else {
+            marker = L.marker([lat, lng], {draggable: true}).addTo(map);
+            marker.on('dragend', function(e) {
+                const pos = e.target.getLatLng();
+                updateInputs(pos.lat, pos.lng);
+            });
+        }
+        map.setView([lat, lng], mapZoom);
+        updateInputs(lat, lng);
+    }
+
+    // Function to update hidden inputs
+    function updateInputs(lat, lng) {
+        latInput.value = lat;
+        lngInput.value = lng;
+    }
+
+    // If we had initial values, set marker
+    if (latInput.value && lngInput.value) {
+        setMarker(parseFloat(latInput.value), parseFloat(lngInput.value));
+    }
+
+    // Map click listener
+    map.on('click', function(e) {
+        setMarker(e.latlng.lat, e.latlng.lng);
     });
     
+    // Geocoding Logic
     let debounceTimer = null;
     
     async function fetchCoordinates() {
         const city = cityInput.value.trim();
         const address = addressInput.value.trim();
         
-        console.log('📍 Attempting geocode with:', { city, address });
+        if (city.length < 2) return; 
         
-        if (city.length < 2 || address.length < 3) {
-            console.log('⚠️ Input too short, skipping');
-            return;
-        }
-        
-        const query = `${address}, ${city}, Sri Lanka`;
+        const query = `${address ? address + ', ' : ''}${city}, Sri Lanka`;
         const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`;
-        
-        console.log('🌐 Fetching from:', url);
         
         try {
             const response = await fetch(url);
-            console.log('📥 Response status:', response.status);
-            
-            if (!response.ok) {
-                console.error('❌ HTTP error:', response.status, response.statusText);
-                return;
-            }
+            if (!response.ok) return;
             
             const data = await response.json();
-            console.log('📦 API Response:', data);
-            
             if (data && data.length > 0) {
-                latInput.value = data[0].lat;
-                lngInput.value = data[0].lon;
-                console.log('✅ Coordinates SET:', {
-                    lat: latInput.value,
-                    lng: lngInput.value
-                });
-                
-                // Visual feedback (optional)
-                latInput.style.backgroundColor = '#d4edda';
-                lngInput.style.backgroundColor = '#d4edda';
-                setTimeout(() => {
-                    latInput.style.backgroundColor = '';
-                    lngInput.style.backgroundColor = '';
-                }, 2000);
-            } else {
-                console.warn('⚠️ No results from geocoder for:', query);
-                alert('Could not find coordinates for this address. Please try a different address.');
+                const lat = parseFloat(data[0].lat);
+                const lon = parseFloat(data[0].lon);
+                setMarker(lat, lon);
             }
         } catch (error) {
-            console.error('❌ Geocoding failed:', error);
-            alert('Geocoding error: ' + error.message);
+            console.error('Geocoding failed:', error);
         }
     }
     
-    // Debounced event listeners
-    cityInput.addEventListener('input', () => {
-        console.log('⌨️ City input changed');
-        clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(fetchCoordinates, 1000);
-    });
+    // Listeners for geocoding
+    cityInput.addEventListener('change', fetchCoordinates); // Changed input to change for select
     
     addressInput.addEventListener('input', () => {
-        console.log('⌨️ Address input changed');
         clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(fetchCoordinates, 1000);
+        debounceTimer = setTimeout(fetchCoordinates, 1500);
     });
-    
-    // Form submit validation
-    const form = cityInput.closest('form');
-    if (form) {
-        console.log('✅ Form found:', form);
-        
-        form.addEventListener('submit', async function (e) {
-            console.log('📝 Form submitting...');
-            console.log('Current values:', {
-                lat: latInput.value,
-                lng: lngInput.value
-            });
-            
-            if (!latInput.value || !lngInput.value) {
-                e.preventDefault();
-                console.log('⏳ No coordinates yet, fetching...');
-                
-                await fetchCoordinates();
-                
-                // Check again after fetch
-                if (latInput.value && lngInput.value) {
-                    console.log('✅ Coordinates obtained, submitting...');
-                    form.submit();
-                } else {
-                    alert('Could not determine coordinates. Please check the address and city.');
-                    console.error('❌ Still no coordinates after fetch');
-                }
-            } else {
-                console.log('✅ Coordinates present, allowing submit');
-            }
-        });
-    }
+
+    // Handle form submit just in case (optional, validation handled by required attributes)
 });
 </script>
 @endpush

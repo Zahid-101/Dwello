@@ -36,13 +36,16 @@
                 <nav class="flex items-center" style="gap: 32px;">
                     <a href="{{ route('home') }}" class = "nav-link" style="color: var(--gray-700); text-decoration: none; font-weight: 500;">Home</a>
                     <a href="{{ route('properties.index') }}" class = "nav-link"  style="color: var(--gray-700); text-decoration: none; font-weight: 500;">Search Rooms</a>
-                    <a href="{{ route('roommates.index') }}" class = "nav-link" style="color: var(--gray-700); text-decoration: none; font-weight: 500;">Find Flatmate</a>
+                    
+                    @if(!auth()->check() || (auth()->user()->isSeeker()))
+                        <a href="{{ route('roommates.index') }}" class = "nav-link" style="color: var(--gray-700); text-decoration: none; font-weight: 500;">Find Flatmate</a>
+                    @endif
 
-                    {{-- Not built yet → send to under-development 
-                    <a href="{{ route('under-development') }}" style="color: var(--gray-700); text-decoration: none; font-weight: 500;">Messages</a>
-                    --}}
                     @auth
-                     <a href="{{ route('properties.create') }}" class = "nav-link"  style="color: var(--gray-700); text-decoration: none; font-weight: 500;">Create Listing</a>
+                        <a href="{{ route('messages.index') }}" class="nav-link" style="color: var(--gray-700); text-decoration: none; font-weight: 500;">Messages</a>
+                        @if(auth()->user()->isLandlord())
+                         <a href="{{ route('properties.create') }}" class = "nav-link"  style="color: var(--gray-700); text-decoration: none; font-weight: 500;">Create Listing</a>
+                        @endif
                     @endauth
                 </nav>
 

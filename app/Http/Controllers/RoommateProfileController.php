@@ -156,17 +156,17 @@ class RoommateProfileController extends Controller
         }
 
         $data = $request->validate([
-            'display_name'        => 'required|string|max:255',
+            'display_name'        => 'required|string|max:50',
             'age'                 => 'nullable|integer|min:16|max:100',
             'gender'              => 'nullable|in:male,female,other',
-            'budget_min'          => 'nullable|numeric|min:0',
-            'budget_max'          => 'nullable|numeric|min:0',
-            'preferred_city'      => 'nullable|string|max:255',
+            'budget_min'          => 'nullable|numeric|min:0|max:10000000',
+            'budget_max'          => 'nullable|numeric|min:0|max:10000000|gte:budget_min', // Max >= Min
+            'preferred_city'      => 'nullable|string|max:50',
             'preferred_location'  => 'nullable|string|max:255',
-            'move_in_date'        => 'nullable|date',
+            'move_in_date'        => 'nullable|date|after_or_equal:today',
             'is_smoker'           => 'nullable|boolean',
             'has_pets'            => 'nullable|boolean',
-            'bio'                 => 'nullable|string',
+            'bio'                 => 'nullable|string|max:1000',
             // New compatibility fields
             'pref_no_smoker'               => 'boolean',
             'pref_pets_ok'                 => 'boolean',
@@ -180,7 +180,10 @@ class RoommateProfileController extends Controller
             'study_focus'                  => 'nullable|integer|min:1|max:5',
             'social_level'                 => 'nullable|integer|min:1|max:5',
             'schedule_type'                => 'nullable|in:morning,night,mixed',
-            'occupation_field'             => 'nullable|string|max:255',
+            'occupation_field'             => 'nullable|string|max:50',
+        ], [
+            'budget_max.gte' => 'Maximum budget must be greater than or equal to minimum budget.',
+            'move_in_date.after_or_equal' => 'Move-in date cannot be in the past.',
         ]);
 
         $data['user_id'] = auth()->id();

@@ -51,7 +51,7 @@
             <div class="grid grid-3 gap-6" style="margin-bottom: 16px;">
                 <div>
                     <label style="display:block; font-size: 14px; font-weight:500; margin-bottom:6px;">Age</label>
-                    <input type="number" class="input" style="width:100%; border-radius:12px;"
+                    <input type="number" min="16" max="100" class="input" style="width:100%; border-radius:12px;"
                            name="age" value="{{ old('age', $profile->age ?? null) }}">
                 </div>
                 <div>
@@ -75,9 +75,12 @@
             <div class="grid grid-2 gap-6" style="margin-bottom: 16px;">
                 <div>
                     <label style="display:block; font-size: 14px; font-weight:500; margin-bottom:6px;">Preferred City</label>
-                    <input class="input" style="width:100%; border-radius:12px;"
-                           name="preferred_city"
-                           value="{{ old('preferred_city', $profile->preferred_city ?? null) }}">
+                    <select class="input" style="width:100%; border-radius:12px;" name="preferred_city">
+                        <option value="">Select Preferred City</option>
+                        @foreach(config('cities') as $city)
+                            <option value="{{ $city }}" {{ old('preferred_city', $profile->preferred_city ?? '') == $city ? 'selected' : '' }}>{{ $city }}</option>
+                        @endforeach
+                    </select>
                 </div>
                 <div>
                     <label style="display:block; font-size: 14px; font-weight:500; margin-bottom:6px;">Preferred Area / Location</label>
@@ -90,13 +93,13 @@
             <div class="grid grid-2 gap-6" style="margin-bottom: 16px;">
                 <div>
                     <label style="display:block; font-size: 14px; font-weight:500; margin-bottom:6px;">Budget Min (LKR)</label>
-                    <input type="number" step="0.01" class="input" style="width:100%; border-radius:12px;"
+                    <input type="number" step="100" min="0" class="input" style="width:100%; border-radius:12px;"
                            name="budget_min"
                            value="{{ old('budget_min', $profile->budget_min ?? null) }}">
                 </div>
                 <div>
                     <label style="display:block; font-size: 14px; font-weight:500; margin-bottom:6px;">Budget Max (LKR)</label>
-                    <input type="number" step="0.01" class="input" style="width:100%; border-radius:12px;"
+                    <input type="number" step="100" min="0" class="input" style="width:100%; border-radius:12px;"
                            name="budget_max"
                            value="{{ old('budget_max', $profile->budget_max ?? null) }}">
                 </div>
@@ -204,3 +207,19 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // Block 'e', 'E', '+', '-' from number inputs
+    const numberInputs = document.querySelectorAll('input[type="number"]');
+    numberInputs.forEach(input => {
+        input.addEventListener('keydown', function(e) {
+            if (['e', 'E', '+', '-'].includes(e.key)) {
+                e.preventDefault();
+            }
+        });
+    });
+});
+</script>
+@endpush

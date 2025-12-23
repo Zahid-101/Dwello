@@ -49,9 +49,9 @@
                     <div style="margin-bottom: 24px;">
                         <h3 style="font-weight: 500; color: var(--gray-900); margin-bottom: 8px;">Budget (LKR)</h3>
                         <div class="flex" style="gap: 8px;">
-                            <input class="input" type="number" step="100" name="min_rent" placeholder="Min"
+                            <input class="input" type="number" step="100" min="0" name="min_rent" placeholder="Min"
                                    value="{{ request('min_rent') }}" style="border-radius: 12px; width: 50%;">
-                            <input class="input" type="number" step="100" name="max_rent" placeholder="Max"
+                            <input class="input" type="number" step="100" min="0" name="max_rent" placeholder="Max"
                                    value="{{ request('max_rent') }}" style="border-radius: 12px; width: 50%;">
                         </div>
                     </div>
@@ -59,15 +59,26 @@
                     {{-- City --}}
                     <div style="margin-bottom: 24px;">
                         <h3 style="font-weight: 500; color: var(--gray-900); margin-bottom: 8px;">City</h3>
-                        <input class="input" type="text" name="city" placeholder="e.g. Colombo"
-                               value="{{ request('city') }}" style="border-radius: 12px; width: 100%;">
+                        <select class="input" style="width:100%; border-radius:12px;" name="city">
+                            <option value="">Any city</option>
+                            @foreach(config('cities') as $city)
+                                <option value="{{ $city }}" {{ request('city') == $city ? 'selected' : '' }}>{{ $city }}</option>
+                            @endforeach
+                        </select>
                     </div>
 
                     {{-- Text search --}}
                     <div style="margin-bottom: 24px;">
                         <h3 style="font-weight: 500; color: var(--gray-900); margin-bottom: 8px;">Search</h3>
-                        <input class="input" type="text" name="q" placeholder="Title, area, address"
-                               value="{{ request('q') }}" style="border-radius: 12px; width: 100%;">
+                        <div style="position: relative;">
+                            <input class="input" type="text" name="q" placeholder="Title, area, address"
+                                   value="{{ request('q') }}" style="border-radius: 12px; width: 100%; padding-right: 40px;">
+                            <button type="submit" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--gray-500);">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 20px; height: 20px;">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                                </svg>
+                            </button>
+                        </div>
                     </div>
 
                     {{-- Type --}}
@@ -111,7 +122,7 @@
                             <div style="background: white; border-radius: 20px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); overflow: hidden;">
                                 <div style="display: flex;">
                                     {{-- Image placeholder --}}
-                                    <div style="width: 280px; height: 200px; position: relative;">
+                                    <div style="width: 280px; min-width: 280px; height: 200px; position: relative;">
                                         <img
                                             src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=300&h=200&fit=crop"
                                             alt="{{ $property->title }}"
@@ -183,7 +194,7 @@
             </div>
 
             {{-- Map --}}
-            <div style="width: 400px; background: var(--gray-100);">
+            <div style="width: 400px; height: 100%; background: var(--gray-100); position: relative;">
                 <div id="map" style="width: 100%; height: 100%; background: var(--gray-200);"></div>
             </div>
         </div>

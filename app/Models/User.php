@@ -23,6 +23,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
     ];
 
     /**
@@ -62,5 +63,15 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(RoommateProfile::class, 'favorites', 'user_id', 'roommate_profile_id')
             ->withTimestamps();
+    }
+
+    public function isLandlord(): bool
+    {
+        return $this->role === 'landlord';
+    }
+
+    public function isSeeker(): bool // Roommate Seeker/Tenant
+    {
+        return $this->role === 'seeker';
     }
 }
