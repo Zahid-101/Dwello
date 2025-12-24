@@ -82,7 +82,16 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/properties/{property}/message', [ConversationController::class, 'startProperty'])->name('conversations.startProperty');
     Route::post('/roommates/{user}/message', [ConversationController::class, 'startRoommate'])->name('conversations.startRoommate');
+
+    // Reviews
+    Route::post('/properties/{property}/reviews', [\App\Http\Controllers\ReviewController::class, 'store'])->name('reviews.store');
+
+    // Admin Reviews
+    Route::get('/admin/reviews', [\App\Http\Controllers\AdminReviewController::class, 'index'])->name('admin.reviews.index');
+    Route::post('/admin/reviews/{review}/approve', [\App\Http\Controllers\AdminReviewController::class, 'approve'])->name('admin.reviews.approve');
+    Route::post('/admin/reviews/{review}/reject', [\App\Http\Controllers\AdminReviewController::class, 'reject'])->name('admin.reviews.reject');
 });
+
 
 // Wildcards (must be last)
 Route::get('/properties/{property}', [PropertyController::class, 'show'])

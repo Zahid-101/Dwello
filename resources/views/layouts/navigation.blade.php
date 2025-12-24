@@ -32,6 +32,12 @@
                             </span>
                         @endif
                     </x-nav-link>
+
+                    @if(auth()->user()->isAdmin())
+                        <x-nav-link :href="route('admin.reviews.index')" :active="request()->routeIs('admin.*')">
+                            {{ __('Admin') }}
+                        </x-nav-link>
+                    @endif
                 </div>
             </div>
 

@@ -164,6 +164,110 @@
             </div>
         </div>
     </div>
+        </div>
+    </div>
+
+    {{-- Reviews Section --}}
+    <div style="margin-bottom: 48px; padding-top: 32px; border-top: 1px solid var(--gray-200);">
+        <h2 style="font-size: 24px; font-weight: 600; color: var(--gray-900); margin-bottom: 24px;">Reviews</h2>
+
+        {{-- Flash Messages --}}
+        @if(session('success'))
+            <div style="background: #ecfdf5; color: #047857; padding: 12px; border-radius: 8px; margin-bottom: 16px;">
+                {{ session('success') }}
+            </div>
+        @endif
+        @if(session('error'))
+            <div style="background: #fef2f2; color: #b91c1c; padding: 12px; border-radius: 8px; margin-bottom: 16px;">
+                {{ session('error') }}
+            </div>
+        @endif
+
+        <div class="grid grid-2 gap-8" style="grid-template-columns: 1fr 1fr; gap: 48px;">
+            {{-- Review List --}}
+            <div>
+                <div style="display: flex; align-items: baseline; gap: 12px; margin-bottom: 24px;">
+                    <span style="font-size: 48px; font-weight: 700; color: var(--gray-900);">
+                        {{ number_format($property->average_rating ?? 0, 1) }}
+                    </span>
+                    <span style="color: var(--gray-500);">/ 5.0 ({{ $property->approvedReviews->count() }} reviews)</span>
+                </div>
+
+                <div class="space-y-6">
+                    @forelse($property->approvedReviews as $review)
+                        <div style="background: var(--gray-50); padding: 16px; border-radius: 12px; margin-bottom: 16px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                <div style="font-weight: 600;">{{ $review->user->name }}</div>
+                                <div style="color: var(--gray-500); font-size: 14px;">{{ $review->created_at->diffForHumans() }}</div>
+                            </div>
+                            <div style="color: #f59e0b; margin-bottom: 8px;">
+                                @for($i = 0; $i < 5; $i++)
+                                    @if($i < $review->rating) ★ @else ☆ @endif
+                                @endfor
+                            </div>
+                            <p style="color: var(--gray-700);">{{ $review->comment }}</p>
+                        </div>
+                    @empty
+                        <p style="color: var(--gray-500); font-style: italic;">No reviews yet.</p>
+                    @endforelse
+                </div>
+            </div>
+
+            {{-- Review Form --}}
+            <div>
+                @auth
+                    @if(auth()->id() !== $property->user_id)
+                        <?php
+                            // Check conversation existence (simplified check in view for UI toggle, logic enforced in controller)
+                            $hasConvo = \App\Models\Conversation::where('property_id', $property->id)
+                                ->where(function($q) {
+                                    $q->where('user_one_id', auth()->id())
+                                      ->orWhere('user_two_id', auth()->id());
+                                })->exists();
+                        ?>
+
+                        @if($hasConvo)
+                            <div style="background: white; border: 1px solid var(--gray-200); padding: 24px; border-radius: 16px;">
+                                <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 16px;">Write a Review</h3>
+                                <form action="{{ route('reviews.store', $property) }}" method="POST">
+                                    @csrf
+                                    <div style="margin-bottom: 16px;">
+                                        <label style="display: block; margin-bottom: 8px; font-weight: 500;">Rating</label>
+                                        <div style="display: flex; gap: 8px;">
+                                            @for($i = 1; $i <= 5; $i++)
+                                                <label style="cursor: pointer;">
+                                                    <input type="radio" name="rating" value="{{ $i }}" {{ old('rating') == $i ? 'checked' : '' }} required> {{ $i }}
+                                                </label>
+                                            @endfor
+                                        </div>
+                                    </div>
+
+                                    <div style="margin-bottom: 16px;">
+                                        <label style="display: block; margin-bottom: 8px; font-weight: 500;">Comment</label>
+                                        <textarea name="comment" rows="4" style="width: 100%; border: 1px solid var(--gray-300); border-radius: 8px; padding: 12px;">{{ old('comment') }}</textarea>
+                                    </div>
+
+                                    <button type="submit" class="btn btn-primary" style="width: 100%;">Submit Review</button>
+                                </form>
+                            </div>
+                        @else
+                            <div style="background: var(--gray-50); padding: 24px; border-radius: 16px; text-align: center; color: var(--gray-600);">
+                                <p>You verify this property by contacting the landlord before you can leave a review.</p>
+                            </div>
+                        @endif
+                    @else
+                        <div style="background: var(--gray-50); padding: 24px; border-radius: 16px; text-align: center; color: var(--gray-600);">
+                            <p>You cannot review your own property.</p>
+                        </div>
+                    @endif
+                @else
+                    <div style="background: var(--gray-50); padding: 24px; border-radius: 16px; text-align: center; color: var(--gray-600);">
+                        <p><a href="{{ route('login') }}" style="color: var(--dwello-primary);">Login</a> to leave a review.</p>
+                    </div>
+                @endauth
+            </div>
+        </div>
+    </div>
 </div>
 @endsection
 

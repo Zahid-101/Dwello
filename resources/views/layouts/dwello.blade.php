@@ -53,6 +53,12 @@
                         @if(auth()->user()->isLandlord())
                          <a href="{{ route('properties.create') }}" class = "nav-link"  style="color: var(--gray-700); text-decoration: none; font-weight: 500;">Create Listing</a>
                         @endif
+
+                        @if(auth()->user()->isAdmin())
+                            <a href="{{ route('admin.reviews.index') }}" class="nav-link" style="color: #4f46e5; text-decoration: none; font-weight: 600;">
+                                Admin
+                            </a>
+                        @endif
                     @endauth
                 </nav>
 

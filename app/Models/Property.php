@@ -33,4 +33,19 @@ class Property extends Model
     {
         return $this->hasMany(PropertyPhoto::class);
     }
+
+    public function reviews()
+    {
+        return $this->hasMany(\App\Models\Review::class);
+    }
+
+    public function approvedReviews()
+    {
+        return $this->reviews()->where('status', 'approved');
+    }
+
+    public function getAverageRatingAttribute()
+    {
+        return $this->approvedReviews()->avg('rating');
+    }
 }

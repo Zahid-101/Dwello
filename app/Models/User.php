@@ -74,4 +74,16 @@ class User extends Authenticatable
     {
         return $this->role === 'seeker';
     }
+
+    public function reviews()
+    {
+        return $this->hasMany(\App\Models\Review::class);
+    }
+
+    public function isAdmin(): bool
+    {
+        // Simple admin check based on .env config or specific email
+        // Logic: if email matches config OR role is 'admin' (if we had that role)
+        return $this->email === config('app.admin_email', 'admin@dwello.com');
+    }
 }
