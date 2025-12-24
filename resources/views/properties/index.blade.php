@@ -165,9 +165,9 @@
                                                     {{ $property->bedrooms }} bed • {{ $property->bathrooms }} bath
                                                 </span>
                                             </div>
-                                            <button style="color: var(--dwello-primary); font-weight: 500; background: none; border: none; cursor: pointer;">
+                                            <a href="{{ route('properties.show', $property) }}" style="color: var(--dwello-primary); font-weight: 500; text-decoration: none;">
                                                 View Details →
-                                            </button>
+                                            </a>
                                         </div>
                                         <div style="margin-top: 12px;">
                                             @if(auth()->id() !== $property->user_id)

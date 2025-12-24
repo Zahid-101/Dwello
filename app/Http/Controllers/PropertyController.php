@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Property;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class PropertyController extends Controller
 {
@@ -62,6 +63,7 @@ class PropertyController extends Controller
      */
     public function show(Property $property)
     {
+        $property->load(['photos', 'user']);
         return view('properties.show', compact('property'));
     }
 
@@ -73,7 +75,7 @@ class PropertyController extends Controller
         $validated = $request->validate([
             'title'         => 'required|string|max:100',
             'description'   => 'nullable|string|max:2000',
-            'city'          => 'required|string|max:50',
+            'city'          => ['required', 'string', 'max:50', Rule::in(config('cities'))],
             'address'       => 'required|string|max:255',
             'monthly_rent'  => 'required|numeric|min:0|max:10000000', // Cap at 10 million for safety
             'bedrooms'      => 'required|integer|min:1|max:20',
@@ -82,11 +84,20 @@ class PropertyController extends Controller
             'available_from'=> 'nullable|date|after_or_equal:today',
             'latitude'      => 'nullable|numeric|between:-90,90',
             'longitude'     => 'nullable|numeric|between:-180,180',
+            'photos'        => 'nullable|array',
+            'photos.*'      => 'image|mimes:jpeg,png,jpg,webp|max:2048', // 2MB max per image
         ]);
 
         $validated['user_id'] = auth()->id();
 
-        Property::create($validated);
+        $property = Property::create($validated);
+
+        if ($request->hasFile('photos')) {
+            foreach ($request->file('photos') as $photo) {
+                $path = $photo->store("properties/{$property->id}", 'public');
+                $property->photos()->create(['path' => $path]);
+            }
+        }
 
         return redirect()->route('properties.index')
             ->with('success', 'Property created successfully.');

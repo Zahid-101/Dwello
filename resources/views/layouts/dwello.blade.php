@@ -42,7 +42,14 @@
                     @endif
 
                     @auth
-                        <a href="{{ route('messages.index') }}" class="nav-link" style="color: var(--gray-700); text-decoration: none; font-weight: 500;">Messages</a>
+                        <a href="{{ route('messages.index') }}" class="nav-link" style="color: var(--gray-700); text-decoration: none; font-weight: 500; display: inline-flex; align-items: center;">
+                            Messages
+                            @if(isset($unreadMessagesCount) && $unreadMessagesCount > 0)
+                                <span style="background-color: #dc2626; color: white; border-radius: 9999px; padding: 2px 6px; font-size: 10px; font-weight: bold; margin-left: 4px; line-height: 1;">
+                                    {{ $unreadMessagesCount > 99 ? '99+' : $unreadMessagesCount }}
+                                </span>
+                            @endif
+                        </a>
                         @if(auth()->user()->isLandlord())
                          <a href="{{ route('properties.create') }}" class = "nav-link"  style="color: var(--gray-700); text-decoration: none; font-weight: 500;">Create Listing</a>
                         @endif
@@ -66,8 +73,14 @@
     border-radius: 20px; 
     box-shadow: 0 0 10px rgba(0,0,0,0.05); /* Subtle glow */
     transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    text-decoration: none;
 ">
     {{ Auth::user()->name }}
+    @if(isset($unreadMessagesCount) && $unreadMessagesCount > 0)
+        <span style="display: inline-block; width: 8px; height: 8px; background-color: #dc2626; border-radius: 50%; margin-left: 6px;"></span>
+    @endif
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 16px; height: 16px; margin-left: 6px; display: inline-block; vertical-align: text-bottom;">
   <path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clip-rule="evenodd" />
 </svg>

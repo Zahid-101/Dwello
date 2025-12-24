@@ -6,6 +6,7 @@ use App\Models\RoommateProfile;
 use App\Models\User;
 use App\Services\CompatibilityService;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class RoommateProfileController extends Controller
 {
@@ -161,7 +162,7 @@ class RoommateProfileController extends Controller
             'gender'              => 'nullable|in:male,female,other',
             'budget_min'          => 'nullable|numeric|min:0|max:10000000',
             'budget_max'          => 'nullable|numeric|min:0|max:10000000|gte:budget_min', // Max >= Min
-            'preferred_city'      => 'nullable|string|max:50',
+            'preferred_city'      => ['nullable', 'string', 'max:50', Rule::in(config('cities'))],
             'preferred_location'  => 'nullable|string|max:255',
             'move_in_date'        => 'nullable|date|after_or_equal:today',
             'is_smoker'           => 'nullable|boolean',

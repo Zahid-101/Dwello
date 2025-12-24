@@ -22,7 +22,7 @@
             </div>
         @endif
 
-        <form method="POST" action="{{ route('properties.store') }}" class="space-y-4">
+        <form method="POST" action="{{ route('properties.store') }}" class="space-y-4" enctype="multipart/form-data">
             @csrf
 
             <div style="margin-bottom: 16px;">
@@ -35,6 +35,12 @@
                 <label style="display:block; font-size: 14px; font-weight:500; margin-bottom:6px;">Description</label>
                 <textarea class="input" style="width:100%; border-radius:12px; min-height:100px;"
                           name="description">{{ old('description') }}</textarea>
+            </div>
+
+            <div style="margin-bottom: 16px;">
+                <label style="display:block; font-size: 14px; font-weight:500; margin-bottom:6px;">Photos (Max 6)</label>
+                <input type="file" name="photos[]" multiple accept="image/*" class="input" style="width:100%; border-radius:12px; padding: 10px;">
+                <p style="font-size: 12px; color: var(--gray-500); margin-top: 4px;">Supported formats: JPEG, PNG, WEBP. Max 2MB each.</p>
             </div>
 
             <div class="grid grid-2 gap-6" style="margin-bottom: 16px;">

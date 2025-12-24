@@ -2,113 +2,186 @@
 
 @section('title', $property->title . ' - Dwello')
 
+@push('styles')
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<style>
+    .property-header { position: relative; margin-bottom: 24px; }
+    .gallery-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; height: 400px; border-radius: 20px; overflow: hidden; margin-bottom: 32px; }
+    .main-photo { height: 100%; width: 100%; object-fit: cover; }
+    .side-photos { display: grid; grid-template-rows: 1fr 1fr; gap: 12px; height: 100%; }
+    .side-photo { height: 100%; width: 100%; object-fit: cover; }
+    .feature-card { background: var(--gray-50); padding: 16px; border-radius: 16px; text-align: center; }
+    .feature-value { font-size: 18px; font-weight: 600; color: var(--gray-900); }
+    .feature-label { font-size: 13px; color: var(--gray-600); }
+    .map-container { height: 300px; width: 100%; border-radius: 20px; z-index: 1; }
+    
+    @media (max-width: 768px) {
+        .gallery-grid { grid-template-columns: 1fr; height: auto; }
+        .side-photos { display: none; }
+        .main-photo { height: 300px; }
+    }
+</style>
+@endpush
+
 @section('content')
 <div class="container" style="padding: 32px 24px;">
-    <div style="max-width: 900px; margin: 0 auto;">
-        
-        <div style="background: white; border-radius: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); overflow: hidden; margin-bottom: 24px;">
-            <div style="padding: 32px;">
-                <div class="flex justify-between items-start" style="margin-bottom: 24px;">
-                    <div>
-                        <h1 style="font-size: 32px; font-weight: 700; color: var(--gray-900); margin-bottom: 8px;">{{ $property->title }}</h1>
-                        <p style="color: var(--gray-600); font-size: 16px;">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width:20px; height:20px; display:inline; vertical-align:text-bottom; margin-right:4px;">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
-                            </svg>
-                            {{ $property->address }}, {{ $property->city }}
-                        </p>
-                    </div>
-                    <div style="text-align: right;">
-                        <div style="font-size: 24px; font-weight: 700; color: var(--dwello-primary);">
-                            Rs. {{ number_format($property->monthly_rent) }}
-                            <span style="font-size: 14px; font-weight: 400; color: var(--gray-600);">/ month</span>
-                        </div>
-                        <div style="margin-top: 8px;">
-                            <span class="badge" style="background: #EEF2FF; color: var(--dwello-primary);">{{ app(App\Http\Controllers\PropertyController::class)->getPropertyTypeName($property->property_type) ?? ucfirst($property->property_type) }}</span>
-                        </div>
-                    </div>
-                </div>
+    
+    {{-- Breadcrumb --}}
+    <div style="margin-bottom: 24px; font-size: 14px; color: var(--gray-600);">
+        <a href="{{ route('properties.index') }}" style="color: var(--dwello-primary); text-decoration: none;">Properties</a>
+        <span style="margin: 0 8px;">/</span>
+        {{ $property->city }}
+        <span style="margin: 0 8px;">/</span>
+        {{ Str::limit($property->title, 40) }}
+    </div>
 
-                <div class="grid grid-2 gap-6" style="margin-bottom: 32px; border-top: 1px solid var(--gray-200); border-bottom: 1px solid var(--gray-200); padding: 24px 0;">
-                    <div class="flex items-center" style="gap: 12px;">
-                        <div style="background: var(--gray-100); padding: 12px; border-radius: 12px;">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width:24px; height:24px; color: var(--gray-700);">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                            </svg>
-                        </div>
-                        <div>
-                            <p style="color: var(--gray-500); font-size: 14px; margin:0;">Bedrooms</p>
-                            <p style="font-weight: 600; color: var(--gray-900);">{{ $property->bedrooms }}</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center" style="gap: 12px;">
-                        <div style="background: var(--gray-100); padding: 12px; border-radius: 12px;">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width:24px; height:24px; color: var(--gray-700);">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
-                            </svg>
-                        </div>
-                        <div>
-                            <p style="color: var(--gray-500); font-size: 14px; margin:0;">Bathrooms</p>
-                            <p style="font-weight: 600; color: var(--gray-900);">{{ $property->bathrooms }}</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center" style="gap: 12px;">
-                        <div style="background: var(--gray-100); padding: 12px; border-radius: 12px;">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width:24px; height:24px; color: var(--gray-700);">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0h9m-9 0a2.25 2.25 0 002.25 2.25h12a2.25 2.25 0 002.25-2.25m-9 0a2.25 2.25 0 00-2.25 2.25M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                        </div>
-                        <div>
-                            <p style="color: var(--gray-500); font-size: 14px; margin:0;">Available From</p>
-                            <p style="font-weight: 600; color: var(--gray-900);">{{ $property->available_from ? \Carbon\Carbon::parse($property->available_from)->format('M d, Y') : 'Now' }}</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div style="margin-bottom: 32px;">
-                    <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 12px;">Description</h3>
-                    <p style="color: var(--gray-700); line-height: 1.6;">
-                        {{ $property->description ?? 'No description provided.' }}
-                    </p>
-                </div>
-
-                @if($property->latitude && $property->longitude)
-                <div style="margin-bottom: 32px;">
-                    <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 12px;">Location</h3>
-                    <div id="map" style="height: 350px; width: 100%; border-radius: 12px;"></div>
-                </div>
+    {{-- Gallery --}}
+    <div class="gallery-grid">
+        @if($property->photos->count() > 0)
+            <img src="{{ Storage::url($property->photos->first()->path) }}" class="main-photo" alt="{{ $property->title }}">
+            <div class="side-photos">
+                @if($property->photos->count() > 1)
+                    <img src="{{ Storage::url($property->photos[1]->path) }}" class="side-photo" alt="Photo 2">
+                @else
+                    <div style="background: var(--gray-100); height: 100%;"></div>
                 @endif
                 
-                <div class="flex justify-between items-center" style="margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--gray-200);">
-                   <a href="{{ route('properties.index') }}" class="btn btn-outline">Back to Search</a>
-                   {{-- If we had messaging --}}
-                   {{-- <button class="btn btn-primary">Contact Landlord</button> --}}
+                @if($property->photos->count() > 2)
+                    <div style="position: relative; height: 100%;">
+                        <img src="{{ Storage::url($property->photos[2]->path) }}" class="side-photo" alt="Photo 3">
+                        @if($property->photos->count() > 3)
+                            <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.5); color: white; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 600;">
+                                +{{ $property->photos->count() - 3 }} more
+                            </div>
+                        @endif
+                    </div>
+                @else
+                    <div style="background: var(--gray-100); height: 100%;"></div>
+                @endif
+            </div>
+        @else
+            {{-- Fallback placeholder --}}
+            <img src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&h=600&fit=crop" class="main-photo" alt="Placeholder">
+            <div class="side-photos">
+                <div style="background: var(--gray-100);"></div>
+                <div style="background: var(--gray-100);"></div>
+            </div>
+        @endif
+    </div>
+
+    <div class="grid grid-2 gap-8" style="margin-bottom: 48px; grid-template-columns: 2fr 1fr;">
+        {{-- Left Content --}}
+        <div>
+            <div class="flex justify-between items-start" style="margin-bottom: 16px;">
+                <div>
+                    <h1 style="font-size: 32px; font-family: 'Poppins', sans-serif; font-weight: 600; color: var(--gray-900); line-height: 1.2; margin-bottom: 8px;">
+                        {{ $property->title }}
+                    </h1>
+                    <p style="font-size: 16px; color: var(--gray-600); display: flex; align-items: center; gap: 6px;">
+                        <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                        {{ $property->address }}, {{ $property->city }}
+                    </p>
                 </div>
+                <div style="text-align: right;">
+                    <div style="font-size: 32px; font-weight: 700; color: var(--dwello-primary);">
+                        LKR {{ number_format($property->monthly_rent/1000, 1) }}k
+                        <span style="font-size: 16px; color: var(--gray-500); font-weight: 400;">/mo</span>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Key Feature Row --}}
+            <div class="grid grid-4 gap-4" style="margin-bottom: 32px;">
+                <div class="feature-card">
+                    <div class="feature-value">{{ ucfirst($property->property_type) }}</div>
+                    <div class="feature-label">Type</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-value">{{ $property->bedrooms }} Bed</div>
+                    <div class="feature-label">Bedrooms</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-value">{{ $property->bathrooms }} Bath</div>
+                    <div class="feature-label">Bathrooms</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-value">
+                        @if($property->available_from)
+                            {{ \Carbon\Carbon::parse($property->available_from)->format('M d') }}
+                        @else
+                            Now
+                        @endif
+                    </div>
+                    <div class="feature-label">Availability</div>
+                </div>
+            </div>
+
+            {{-- Description --}}
+            <div style="margin-bottom: 32px;">
+                <h3 style="font-size: 20px; font-weight: 600; margin-bottom: 12px; color: var(--gray-900);">About this property</h3>
+                <div style="color: var(--gray-700); line-height: 1.6; white-space: pre-line;">
+                    {{ $property->description ?? 'No description provided.' }}
+                </div>
+            </div>
+
+            {{-- Map --}}
+            @if($property->latitude && $property->longitude)
+                <div style="margin-bottom: 32px;">
+                    <h3 style="font-size: 20px; font-weight: 600; margin-bottom: 12px; color: var(--gray-900);">Location</h3>
+                    <div id="map" class="map-container"></div>
+                </div>
+            @endif
+        </div>
+
+        {{-- Right Sidebar --}}
+        <div>
+            <div style="background: white; padding: 24px; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); position: sticky; top: 100px;">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px;">
+                    <div style="width: 56px; height: 56px; border-radius: 50%; background: var(--dwello-primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                        {{ strtoupper(substr($property->user->name ?? 'L', 0, 1)) }}
+                    </div>
+                    <div>
+                        <div style="font-weight: 600; color: var(--gray-900);">{{ $property->user->name ?? 'Landlord' }}</div>
+                        <div style="font-size: 13px; color: var(--gray-500);">Property Owner</div>
+                    </div>
+                </div>
+
+                @if(auth()->id() !== $property->user_id)
+                    <form action="{{ route('conversations.startProperty', $property) }}" method="POST">
+                        @csrf
+                        <button type="submit" class="btn btn-primary w-full" style="width: 100%; border-radius: 12px; padding: 14px; font-size: 16px;">
+                            Message Landlord
+                        </button>
+                    </form>
+                @else
+                    <div style="text-align: center; color: var(--gray-500); padding: 12px; background: var(--gray-50); border-radius: 12px;">
+                        This is your listing
+                    </div>
+                @endif
             </div>
         </div>
     </div>
 </div>
 @endsection
 
-@push('map-scripts')
+@push('scripts')
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 @if($property->latitude && $property->longitude)
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    var lat = {{ $property->latitude }};
-    var lng = {{ $property->longitude }};
-    
-    var map = L.map('map').setView([lat, lng], 14);
+    document.addEventListener('DOMContentLoaded', function() {
+        var map = L.map('map').setView([{{ $property->latitude }}, {{ $property->longitude }}], 14);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '© OpenStreetMap'
-    }).addTo(map);
-
-    L.marker([lat, lng]).addTo(map)
-        .bindPopup("{{ $property->title }}")
-        .openPopup();
-});
+        L.marker([{{ $property->latitude }}, {{ $property->longitude }}]).addTo(map)
+            .bindPopup("{{ $property->title }}")
+            .openPopup();
+    });
 </script>
 @endif
 @endpush

@@ -35,14 +35,14 @@
                                     </span>
                                 @endif
                             </div>
-                            <p class="text-gray-600 text-sm truncate max-w-md">
+                            <p class="text-gray-600 text-sm truncate max-w-md {{ $conversation->unread_count > 0 ? 'font-semibold text-gray-900' : '' }}">
                                 @if($lastMessage)
                                     @if($lastMessage->sender_id == auth()->id())
-                                        <span class="text-gray-400">You:</span>
+                                        <span class="text-gray-400 font-normal">You:</span>
                                     @endif
                                     {{ $lastMessage->body }}
                                 @else
-                                    <span class="italic text-gray-400">No messages yet</span>
+                                    <span class="italic text-gray-400 font-normal">No messages yet</span>
                                 @endif
                             </p>
                         </div>
@@ -54,7 +54,17 @@
                                 {{ $conversation->last_message_at->diffForHumans() }}
                             </span>
                         @endif
-                        <span class="text-blue-500 font-medium text-sm">Open</span>
+                        
+                        @if($conversation->unread_count > 0)
+                            <div class="flex flex-col items-end gap-1">
+                                <span class="bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                                    {{ $conversation->unread_count }}
+                                </span>
+                                <span class="text-blue-500 font-medium text-sm">Open</span>
+                            </div>
+                        @else
+                            <span class="text-blue-500 font-medium text-sm">Open</span>
+                        @endif
                     </div>
                 </div>
             </a>

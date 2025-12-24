@@ -22,6 +22,10 @@ class ConversationController extends Controller
             ->with(['property', 'userOne', 'userTwo', 'messages' => function ($query) {
                 $query->latest()->limit(1);
             }])
+            ->withCount(['messages as unread_count' => function ($query) use ($userId) {
+                $query->where('sender_id', '!=', $userId)
+                      ->whereNull('read_at');
+            }])
             ->orderBy('last_message_at', 'desc')
             ->orderBy('updated_at', 'desc')
             ->get();
@@ -46,6 +50,13 @@ class ConversationController extends Controller
                      // The prompt suggested load last 50 oldest->newest. 
                      // Let's do a tailored query:
         
+
+        // Mark unread messages as read
+        $conversation->messages()
+            ->where('sender_id', '!=', auth()->id())
+            ->whereNull('read_at')
+            ->update(['read_at' => now()]);
+
         $messages = $conversation->messages()
             ->with('sender')
             ->latest()
