@@ -175,7 +175,6 @@ class RoommateProfileController extends Controller
             'pref_visitors_ok'             => 'boolean',
             'pref_substance_free_required' => 'boolean',
             'uses_substances'              => 'boolean',
-            'cleanliness'                  => 'nullable|integer|min:1|max:5',
             'noise_tolerance'              => 'nullable|integer|min:1|max:5',
             'sleep_schedule'               => 'nullable|integer|min:1|max:5',
             'study_focus'                  => 'nullable|integer|min:1|max:5',

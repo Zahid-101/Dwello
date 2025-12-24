@@ -3,7 +3,7 @@
 @section('title', 'My Roommate Profile - Dwello')
 
 @section('content')
-<div class="container" style="padding: 32px 24px;">
+<div class="container mx-auto px-4 py-8 md:px-6">
     <div style="max-width: 800px; margin: 0 auto; background: white; border-radius: 20px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); padding: 24px;">
         <h2 style="font-size: 24px; font-family: 'Poppins', sans-serif; font-weight: 600; margin-bottom: 16px;">
             My Roommate Profile
@@ -42,66 +42,90 @@
 
             <div style="margin-bottom: 16px;">
                 <label style="display:block; font-size: 14px; font-weight:500; margin-bottom:6px;">Display Name</label>
-                <input class="input" style="width:100%; border-radius:12px;"
+                <input class="input @error('display_name') border-red-500 @enderror" style="width:100%; border-radius:12px;"
                        name="display_name"
                        value="{{ old('display_name', $profile->display_name ?? auth()->user()->name) }}"
                        required>
+                @error('display_name')
+                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                @enderror
             </div>
 
-            <div class="grid grid-3 gap-6" style="margin-bottom: 16px;">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6" style="margin-bottom: 16px;">
                 <div>
                     <label style="display:block; font-size: 14px; font-weight:500; margin-bottom:6px;">Age</label>
-                    <input type="number" min="16" max="100" class="input" style="width:100%; border-radius:12px;"
+                    <input type="number" min="16" max="100" class="input @error('age') border-red-500 @enderror" style="width:100%; border-radius:12px;"
                            name="age" value="{{ old('age', $profile->age ?? null) }}">
+                    @error('age')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
                 </div>
                 <div>
                     <label style="display:block; font-size: 14px; font-weight:500; margin-bottom:6px;">Gender</label>
                     @php $gender = old('gender', $profile->gender ?? null); @endphp
-                    <select class="input" style="width:100%; border-radius:12px;" name="gender">
+                    <select class="input @error('gender') border-red-500 @enderror" style="width:100%; border-radius:12px;" name="gender">
                         <option value="">Prefer not to say</option>
                         <option value="male" {{ $gender === 'male' ? 'selected' : '' }}>Male</option>
                         <option value="female" {{ $gender === 'female' ? 'selected' : '' }}>Female</option>
                         <option value="other" {{ $gender === 'other' ? 'selected' : '' }}>Other</option>
                     </select>
+                    @error('gender')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
                 </div>
                 <div>
                     <label style="display:block; font-size: 14px; font-weight:500; margin-bottom:6px;">Move-in Date</label>
-                    <input type="date" class="input" style="width:100%; border-radius:12px;"
+                    <input type="date" class="input @error('move_in_date') border-red-500 @enderror" style="width:100%; border-radius:12px;"
                            name="move_in_date"
                            value="{{ old('move_in_date', optional($profile->move_in_date ?? null)->format('Y-m-d')) }}">
+                    @error('move_in_date')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
                 </div>
             </div>
 
-            <div class="grid grid-2 gap-6" style="margin-bottom: 16px;">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6" style="margin-bottom: 16px;">
                 <div>
                     <label style="display:block; font-size: 14px; font-weight:500; margin-bottom:6px;">Preferred City</label>
-                    <select class="input" style="width:100%; border-radius:12px;" name="preferred_city">
+                    <select class="input @error('preferred_city') border-red-500 @enderror" style="width:100%; border-radius:12px;" name="preferred_city">
                         <option value="">Select Preferred City</option>
                         @foreach(config('cities') as $city)
                             <option value="{{ $city }}" {{ old('preferred_city', $profile->preferred_city ?? '') == $city ? 'selected' : '' }}>{{ $city }}</option>
                         @endforeach
                     </select>
+                    @error('preferred_city')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
                 </div>
                 <div>
                     <label style="display:block; font-size: 14px; font-weight:500; margin-bottom:6px;">Preferred Area / Location</label>
-                    <input class="input" style="width:100%; border-radius:12px;"
+                    <input class="input @error('preferred_location') border-red-500 @enderror" style="width:100%; border-radius:12px;"
                            name="preferred_location"
                            value="{{ old('preferred_location', $profile->preferred_location ?? null) }}">
+                    @error('preferred_location')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
                 </div>
             </div>
 
-            <div class="grid grid-2 gap-6" style="margin-bottom: 16px;">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6" style="margin-bottom: 16px;">
                 <div>
                     <label style="display:block; font-size: 14px; font-weight:500; margin-bottom:6px;">Budget Min (LKR)</label>
-                    <input type="number" step="100" min="0" class="input" style="width:100%; border-radius:12px;"
+                    <input type="number" step="100" min="0" class="input @error('budget_min') border-red-500 @enderror" style="width:100%; border-radius:12px;"
                            name="budget_min"
                            value="{{ old('budget_min', $profile->budget_min ?? null) }}">
+                    @error('budget_min')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
                 </div>
                 <div>
                     <label style="display:block; font-size: 14px; font-weight:500; margin-bottom:6px;">Budget Max (LKR)</label>
-                    <input type="number" step="100" min="0" class="input" style="width:100%; border-radius:12px;"
+                    <input type="number" step="100" min="0" class="input @error('budget_max') border-red-500 @enderror" style="width:100%; border-radius:12px;"
                            name="budget_max"
                            value="{{ old('budget_max', $profile->budget_max ?? null) }}">
+                    @error('budget_max')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
                 </div>
             </div>
 
@@ -124,7 +148,7 @@
             
             <div style="margin-bottom: 24px;">
                 <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 12px; color: var(--gray-700);">Deal Breakers & Preferences</h4>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <label class="flex items-center gap-2">
                         <input type="checkbox" name="pref_no_smoker" value="1" {{ old('pref_no_smoker', $profile->pref_no_smoker ?? false) ? 'checked' : '' }}>
                         <span style="font-size: 14px; color: var(--gray-700);">Prefer Non-smokers</span>
@@ -153,21 +177,53 @@
             </div>
 
             <div style="margin-bottom: 24px;">
-                <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 12px; color: var(--gray-700);">Lifestyle (1-5 Scale)</h4>
-                <p style="font-size: 12px; color: var(--gray-500); margin-bottom: 16px;">1 = Low/Quiet/Messy, 5 = High/Loud/My Cleanest Self</p>
+                <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 12px; color: var(--gray-700);">Lifestyle Preferences</h4>
+                <p style="font-size: 12px; color: var(--gray-500); margin-bottom: 16px;">Select the option that best describes you.</p>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    @foreach(['cleanliness' => 'Cleanliness', 'noise_tolerance' => 'Noise Tolerance', 'sleep_schedule' => 'Sleep Schedule (Early vs Late)', 'study_focus' => 'Study Focus', 'social_level' => 'Social Level'] as $field => $label)
+                    {{-- Noise Tolerance --}}
                     <div>
-                        <label style="display:block; font-size: 14px; font-weight:500; margin-bottom:6px;">{{ $label }}</label>
-                        <select name="{{ $field }}" class="input" style="width:100%; border-radius:12px;">
+                        <label style="display:block; font-size: 14px; font-weight:500; margin-bottom:6px;">Noise Tolerance</label>
+                        <select name="noise_tolerance" class="input" style="width:100%; border-radius:12px;">
                             <option value="">Select Level</option>
-                            @foreach(range(1, 5) as $val)
-                                <option value="{{ $val }}" {{ old($field, $profile->$field ?? '') == $val ? 'selected' : '' }}>{{ $val }}</option>
-                            @endforeach
+                            <option value="1" {{ old('noise_tolerance', $profile->noise_tolerance ?? '') == 1 ? 'selected' : '' }}>Quiet</option>
+                            <option value="3" {{ old('noise_tolerance', $profile->noise_tolerance ?? '') == 3 ? 'selected' : '' }}>Moderate</option>
+                            <option value="5" {{ old('noise_tolerance', $profile->noise_tolerance ?? '') == 5 ? 'selected' : '' }}>Loud / OK with noise</option>
                         </select>
                     </div>
-                    @endforeach
+
+                    {{-- Sleep Schedule --}}
+                    <div>
+                        <label style="display:block; font-size: 14px; font-weight:500; margin-bottom:6px;">Sleep Schedule</label>
+                        <select name="sleep_schedule" class="input" style="width:100%; border-radius:12px;">
+                            <option value="">Select Level</option>
+                            <option value="1" {{ old('sleep_schedule', $profile->sleep_schedule ?? '') == 1 ? 'selected' : '' }}>Early sleeper</option>
+                            <option value="3" {{ old('sleep_schedule', $profile->sleep_schedule ?? '') == 3 ? 'selected' : '' }}>Flexible</option>
+                            <option value="5" {{ old('sleep_schedule', $profile->sleep_schedule ?? '') == 5 ? 'selected' : '' }}>Night owl</option>
+                        </select>
+                    </div>
+
+                    {{-- Study Focus --}}
+                    <div>
+                        <label style="display:block; font-size: 14px; font-weight:500; margin-bottom:6px;">Study Focus</label>
+                        <select name="study_focus" class="input" style="width:100%; border-radius:12px;">
+                            <option value="">Select Level</option>
+                            <option value="1" {{ old('study_focus', $profile->study_focus ?? '') == 1 ? 'selected' : '' }}>Relaxed</option>
+                            <option value="3" {{ old('study_focus', $profile->study_focus ?? '') == 3 ? 'selected' : '' }}>Moderate</option>
+                            <option value="5" {{ old('study_focus', $profile->study_focus ?? '') == 5 ? 'selected' : '' }}>Focused</option>
+                        </select>
+                    </div>
+
+                    {{-- Social Level --}}
+                    <div>
+                        <label style="display:block; font-size: 14px; font-weight:500; margin-bottom:6px;">Social Level</label>
+                        <select name="social_level" class="input" style="width:100%; border-radius:12px;">
+                            <option value="">Select Level</option>
+                            <option value="1" {{ old('social_level', $profile->social_level ?? '') == 1 ? 'selected' : '' }}>Private</option>
+                            <option value="3" {{ old('social_level', $profile->social_level ?? '') == 3 ? 'selected' : '' }}>Balanced</option>
+                            <option value="5" {{ old('social_level', $profile->social_level ?? '') == 5 ? 'selected' : '' }}>Social</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 

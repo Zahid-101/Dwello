@@ -68,13 +68,14 @@ class CompatibilityService
      */
     private function calculateWeightedScore(RoommateProfile $viewer, RoommateProfile $target): array
     {
-        $weights = [
-            'cleanliness' => 0.25,
-            'noise_tolerance' => 0.20,
-            'sleep_schedule' => 0.20,
-            'study_focus' => 0.15,
-            'social_level' => 0.10,
-            'occupation_field' => 0.10,
+        // Base weights (sum = 1.0)
+        // If data is missing, we re-normalize based on total weight of available fields.
+        $baseWeights = [
+            'noise_tolerance' => 0.25,
+            'sleep_schedule'  => 0.25,
+            'study_focus'     => 0.20,
+            'social_level'    => 0.20,
+            'occupation_field'=> 0.10,
         ];
 
         $totalWeight = 0;
@@ -82,8 +83,8 @@ class CompatibilityService
         $breakdown = [];
         $reasons = [];
 
-        // Process scalar attributes (1-5 scales)
-        $scales = ['cleanliness', 'noise_tolerance', 'sleep_schedule', 'study_focus', 'social_level'];
+        // 1. Lifestyle Scales (1-5)
+        $scales = ['noise_tolerance', 'sleep_schedule', 'study_focus', 'social_level'];
 
         foreach ($scales as $attribute) {
             $valA = $viewer->$attribute;
@@ -91,37 +92,44 @@ class CompatibilityService
 
             if (!is_null($valA) && !is_null($valB)) {
                 $diff = abs($valA - $valB);
-                // Score 0..1 (0=worst, 1=best). Max diff is 4.
-                // Formula: 1 - (diff / 4)
+                // Score formula: 1 - (diff / 4)
                 $subScore = max(0, 1 - ($diff / 4));
                 
-                $weight = $weights[$attribute];
+                $weight = $baseWeights[$attribute];
                 $weightedSum += $subScore * $weight;
                 $totalWeight += $weight;
 
                 $breakdown[$attribute] = round($subScore * 100);
 
-                // Add reasons
-                $label = ucfirst(str_replace('_', ' ', $attribute));
+                // Generate Reasons with Labels
+                // We use the viewer's label for 'Similar' to give context: "Similar noise preference (Quiet)"
+                // For conflict, show both: "Very different... (You: Quiet, Them: Loud)"
+                $labelA = RoommateProfile::getLabel($attribute, $valA);
+                $labelB = RoommateProfile::getLabel($attribute, $valB);
+                
+                // Friendly attribute name for display
+                $attrName = str_replace('_', ' ', $attribute);
+                // specialized phrasing
+                if ($attribute === 'sleep_schedule') $attrName = 'sleep routine';
+                if ($attribute === 'noise_tolerance') $attrName = 'noise preference';
+                if ($attribute === 'study_focus') $attrName = 'study habits';
+                if ($attribute === 'social_level') $attrName = 'social preference';
+
                 if ($diff <= 1) {
-                    $reasons[] = ['type' => 'positive', 'text' => "Similar $label"];
+                    $reasons[] = ['type' => 'positive', 'text' => "Similar $attrName ($labelA)"];
                 } elseif ($diff >= 3) {
-                    $reasons[] = ['type' => 'warning', 'text' => "Different $label preferences"];
+                    $reasons[] = ['type' => 'warning', 'text' => "Very different $attrName (You: $labelA, Them: $labelB)"];
                 }
             }
         }
 
-        // Process Occupation (String match)
+        // 2. Occupation Match (String)
         if ($viewer->occupation_field && $target->occupation_field) {
-            $weight = $weights['occupation_field'];
+            $weight = $baseWeights['occupation_field'];
             $totalWeight += $weight;
 
-            // Simple case-insensitive match
             $match = strcasecmp($viewer->occupation_field, $target->occupation_field) === 0;
-            $subScore = $match ? 1.0 : 0.0; // Binary 0 or 1 for string match? 
-            // Or maybe partial? Instructions say "occupation_field match". Let's Stick to exact match for simplicity or maybe similar text?
-            // "If occupation_field matches -> Similar occupation background" implies logic.
-            // Let's stick to exact match for score, but maybe loose for reasons? No, instructions are specific.
+            $subScore = $match ? 1.0 : 0.0;
             
             $weightedSum += $subScore * $weight;
             $breakdown['occupation_field'] = $match ? 100 : 0;
@@ -142,6 +150,8 @@ class CompatibilityService
 
         // Normalize score to 0-100
         $finalScore = ($weightedSum / $totalWeight) * 100;
+        
+        // ... filtering reasons remains similar ...
 
         // Filter reasons: max 3 positives, max 2 warnings, total max 5
         $positives = array_filter($reasons, fn($r) => $r['type'] === 'positive');

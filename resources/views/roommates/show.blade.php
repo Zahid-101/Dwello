@@ -3,30 +3,30 @@
 @section('title', $roommateProfile->display_name . ' - Roommate Profile')
 
 @section('content')
-<div class="container" style="padding: 32px 24px;">
+<div class="container mx-auto px-4 py-8 md:px-6">
     <div style="margin-bottom: 24px;">
         <a href="{{ route('roommates.index') }}" class="btn btn-outline" style="border-radius: 12px; padding: 8px 16px;">
             &larr; Back to Listings
         </a>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+    <div class="roommate-show-grid" style="display: grid; grid-template-columns: 2fr 1fr; gap: 32px; align-items: start;">
         {{-- Left Column: Profile Card --}}
-        <div class="md:col-span-2">
-            <div style="background: white; border-radius: 16px; padding: 32px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-bottom: 24px;">
-                <div class="flex items-center" style="gap: 24px; margin-bottom: 24px;">
-                    <div style="width: 100px; height: 100px; border-radius: 50%; background: var(--dwello-primary); color:white; display:flex; align-items:center; justify-content:center; font-size:40px;">
+        <div>
+            <div class="bg-white rounded-2xl p-6 md:p-8 shadow-sm mb-6">
+                <div class="roommate-header" style="display: flex; flex-direction: row; items-center: center; gap: 24px; margin-bottom: 32px; text-align: left;">
+                    <div style="width: 100px; height: 100px; border-radius: 50%; background: var(--dwello-primary); color:white; display:flex; align-items:center; justify-content:center; font-size:40px; flex-shrink: 0;">
                         {{ strtoupper(substr($roommateProfile->display_name ?? 'U', 0, 1)) }}
                     </div>
                     <div>
-                        <h1 style="font-size: 28px; font-family: 'Poppins', sans-serif; font-weight: 700; color: var(--gray-900);">
+                        <h1 class="font-poppins font-bold text-gray-900 leading-tight" style="font-size: 30px;">
                             {{ $roommateProfile->display_name }}
                         </h1>
-                        <p style="color: var(--gray-600); font-size: 16px;">
+                        <p class="text-gray-600 mt-1" style="font-size: 18px;">
                             {{ $roommateProfile->age ? $roommateProfile->age . ' years old • ' : '' }}
                             {{ ucfirst($roommateProfile->gender ?? 'Not specified') }}
                         </p>
-                        <p style="color: var(--gray-600); font-size: 14px; margin-top: 4px;">
+                        <p class="text-sm text-gray-600 mt-1">
                             Looking in: <strong>{{ $roommateProfile->preferred_city ?? 'Anywhere' }}</strong>
                         </p>
                     </div>
@@ -39,7 +39,7 @@
                     </p>
                 </div>
 
-                <div class="grid grid-cols-2 gap-6" style="margin-bottom: 24px;">
+                <div class="roommate-inner-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
                     <div style="background: var(--gray-50); padding: 16px; border-radius: 12px;">
                         <div style="font-size: 12px; color: var(--gray-600); margin-bottom: 4px;">Budget Range</div>
                         <div style="font-size: 18px; font-weight: 600; color: var(--dwello-primary);">
@@ -59,7 +59,24 @@
                 </div>
                 
                 <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 16px; color: var(--gray-900);">Lifestyle & Preferences</h3>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="roommate-inner-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div class="flex items-center gap-2">
+                        <span style="font-size: 18px;">🔊</span>
+                        <span style="color: var(--gray-700);">{{ App\Models\RoommateProfile::getLabel('noise_tolerance', $roommateProfile->noise_tolerance) }}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span style="font-size: 18px;">🌙</span>
+                        <span style="color: var(--gray-700);">{{ App\Models\RoommateProfile::getLabel('sleep_schedule', $roommateProfile->sleep_schedule) }}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span style="font-size: 18px;">📚</span>
+                        <span style="color: var(--gray-700);">{{ App\Models\RoommateProfile::getLabel('study_focus', $roommateProfile->study_focus) }}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span style="font-size: 18px;">💬</span>
+                        <span style="color: var(--gray-700);">{{ App\Models\RoommateProfile::getLabel('social_level', $roommateProfile->social_level) }}</span>
+                    </div>
+
                     <div class="flex items-center gap-2">
                         <span style="font-size: 18px;">🚬</span>
                         <span style="color: var(--gray-700);">{{ $roommateProfile->is_smoker ? 'Smoker' : 'Non-smoker' }}</span>
@@ -84,10 +101,38 @@
             </div>
         </div>
 
-        {{-- Right Column: Compatibility --}}
-        <div>
+        {{-- Right Column: Compatibility & Contact --}}
+        <div style="position: sticky; top: 24px; align-self: start;">
+            {{-- Contact Card --}}
+            <div style="background: white; border-radius: 16px; padding: 24px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-bottom: 24px;">
+                <h3 style="font-size: 20px; font-weight: 700; color: var(--gray-900); margin-bottom: 16px;">
+                    Contact {{ explode(' ', $roommateProfile->display_name)[0] }}
+                </h3>
+                
+                @auth
+                    @if(auth()->id() !== $roommateProfile->user_id)
+                        <form action="{{ route('conversations.startRoommate', $roommateProfile->user_id) }}" method="POST">
+                            @csrf
+                            <button type="submit" class="w-full bg-orange-500 text-white rounded-xl py-3 text-lg font-medium hover:bg-orange-600 transition shadow-lg shadow-orange-500/30" style="background-color: var(--dwello-primary); color: white; width: 100%; padding: 12px; border-radius: 12px; font-weight: 600; font-size: 16px; border: none; cursor: pointer; transition: background 0.2s;">
+                                Message
+                            </button>
+                        </form>
+                    @else
+                        <div style="text-align: center; padding: 12px; background: var(--gray-50); border-radius: 12px; color: var(--gray-600); border: 1px solid var(--gray-200);">
+                            This is your profile
+                        </div>
+                    @endif
+                @else
+                    <div style="text-align: center;">
+                        <a href="{{ route('login') }}" class="w-full block text-center bg-orange-500 text-white rounded-xl py-3 text-lg font-medium hover:bg-orange-600 transition shadow-lg shadow-orange-500/30" style="background-color: var(--dwello-primary); color: white; width: 100%; padding: 12px; border-radius: 12px; font-weight: 600; font-size: 16px; text-decoration: none; display: block; box-sizing: border-box;">
+                            Log in to Message
+                        </a>
+                    </div>
+                @endauth
+            </div>
+
             @if(isset($compatibility))
-                <div style="background: white; border-radius: 16px; padding: 24px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); position: sticky; top: 24px;">
+                <div style="background: white; border-radius: 16px; padding: 24px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
                     <h3 style="font-size: 20px; font-weight: 700; color: var(--gray-900); margin-bottom: 16px;">
                         Compatibility
                     </h3>

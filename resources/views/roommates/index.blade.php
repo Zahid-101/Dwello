@@ -20,19 +20,19 @@
 
 @section('content')
 <div class="matching-page-wrapper">
-    <div class="container" style="padding: 32px 24px;">
+    <div class="container mx-auto px-4 py-8 md:px-6">
         {{-- Page Title --}}
-        <div class="text-center" style="margin-bottom: 32px;">
-            <h2 style="font-size: 36px; font-family: 'Poppins', sans-serif; font-weight: bold; color: var(--gray-900); margin-bottom: 12px;">
+        <div class="text-center mb-8">
+            <h2 class="text-2xl md:text-4xl font-bold text-gray-900 font-poppins mb-3">
                 Find Your Perfect Flatmate
             </h2>
-            <p style="font-size: 18px; color: var(--gray-600); max-width: 600px; margin: 0 auto;">
+            <p class="text-base md:text-lg text-gray-600 max-w-2xl mx-auto">
                 Discover compatible flatmates based on lifestyle preferences, schedules, and house rules
             </p>
         </div>
 
         {{-- Tabs --}}
-        <div class="flex justify-center" style="margin-bottom: 48px;">
+        <div class="flex justify-center mb-12">
             <div style="background: var(--gray-100); border-radius: 16px; padding: 6px; display: inline-flex; gap: 4px;">
                 <button class="tab-button active" onclick="switchTab('matches')" id="matchesTab">
                     <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -52,25 +52,24 @@
         {{-- Matches Tab Content --}}
         <div class="tab-content active" id="matchesContent">
             {{-- Filter Bar --}}
-            <div style="background: white; border-radius: 16px; padding: 20px; margin-bottom: 32px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
-                <form method="GET" action="{{ route('roommates.index') }}" class="flex items-center justify-between" style="flex-wrap: wrap; gap: 16px;">
-                    <div class="flex items-center" style="gap: 16px; flex-wrap: wrap;">
-                        <select name="city" style="padding: 8px 12px; border: 1px solid var(--gray-300); border-radius: 8px; font-size: 14px;">
+            <div class="bg-white rounded-2xl p-5 mb-8 shadow-sm">
+                <form method="GET" action="{{ route('roommates.index') }}" style="display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
+                    <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+                        <select name="city" style="padding: 8px 12px; border: 1px solid var(--gray-300); border-radius: 8px; font-size: 14px; background: white;">
                             <option value="">Any City</option>
                             @foreach(config('cities') as $city)
                                 <option value="{{ $city }}" {{ request('city') == $city ? 'selected' : '' }}>{{ $city }}</option>
                             @endforeach
                         </select>
                         
-                        <select name="budget_range" style="padding: 8px 12px; border: 1px solid var(--gray-300); border-radius: 8px; font-size: 14px;">
+                        <select name="budget_range" style="padding: 8px 12px; border: 1px solid var(--gray-300); border-radius: 8px; font-size: 14px; background: white;">
                             <option value="">All Budgets</option>
                             <option value="low" {{ request('budget_range') == 'low' ? 'selected' : '' }}>₨10k - ₨25k</option>
                             <option value="medium" {{ request('budget_range') == 'medium' ? 'selected' : '' }}>₨25k - ₨50k</option>
                             <option value="high" {{ request('budget_range') == 'high' ? 'selected' : '' }}>₨50k+</option>
                         </select>
 
-                        {{-- Semantic only for now --}}
-                        <select name="min_compatibility" style="padding: 8px 12px; border: 1px solid var(--gray-300); border-radius: 8px; font-size: 14px;">
+                        <select name="min_compatibility" style="padding: 8px 12px; border: 1px solid var(--gray-300); border-radius: 8px; font-size: 14px; background: white;">
                             <option value="">Any Compatibility</option>
                             <option value="70">Compatibility: 70%+</option>
                             <option value="80">Compatibility: 80%+</option>
@@ -81,9 +80,9 @@
                             Apply
                         </button>
                     </div>
-                    <div class="flex items-center" style="gap: 12px;">
-                        <span style="color: var(--gray-600); font-size: 14px;">Sort by:</span>
-                        <select name="sort_by" style="padding: 8px 12px; border: 1px solid var(--gray-300); border-radius: 8px; font-size: 14px;" onchange="this.form.submit()">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <span style="color: var(--gray-600); font-size: 14px white-space: nowrap;">Sort by:</span>
+                        <select name="sort_by" style="padding: 8px 12px; border: 1px solid var(--gray-300); border-radius: 8px; font-size: 14px; background: white;" onchange="this.form.submit()">
                             <option value="best_match" {{ request('sort_by', 'best_match') == 'best_match' ? 'selected' : '' }}>Best Match</option>
                             <option value="newest" {{ request('sort_by') == 'newest' ? 'selected' : '' }}>Newest First</option>
                             <option value="budget_low" {{ request('sort_by') == 'budget_low' ? 'selected' : '' }}>Budget: Low to High</option>
@@ -94,7 +93,7 @@
             </div>
 
             {{-- Profile Cards Grid --}}
-            <div class="grid grid-3 gap-6" style="margin-bottom: 32px;">
+            <div class="roommate-index-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 32px;">
                 @forelse ($profiles as $profile)
                     @php
                         // Use calculated score if available (from Controller), otherwise fallback to heuristic or default
@@ -172,11 +171,11 @@
                                     </span>
                                 @endif
                                 
-                                <span class="compatibility-chip chip-partial">
-                                    <span>●</span> Similar Budget
+                                <span class="compatibility-chip chip-neutral" style="background: var(--gray-100); color: var(--gray-700);">
+                                    <span>●</span> {{ App\Models\RoommateProfile::getLabel('sleep_schedule', $profile->sleep_schedule) }}
                                 </span>
-                                <span class="compatibility-chip chip-match">
-                                    <span>●</span> Quiet Hours
+                                <span class="compatibility-chip chip-neutral" style="background: var(--gray-100); color: var(--gray-700);">
+                                    <span>●</span> {{ App\Models\RoommateProfile::getLabel('noise_tolerance', $profile->noise_tolerance) }}
                                 </span>
                             </div>
                         </div>
@@ -225,9 +224,19 @@
                         </div>
                     </div>
                 @empty
-                    <div class="col-span-3 text-center" style="padding: 48px;">
-                        <p style="color: var(--gray-600); font-size: 18px;">No profiles found matching your criteria.</p>
-                        <a href="{{ route('roommates.index') }}" class="btn btn-outline" style="margin-top: 16px;">Clear Filters</a>
+                    <div class="col-span-1 md:col-span-3 flex flex-col items-center justify-center py-12 text-center bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+                        <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                            <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">No roommates found</h3>
+                        <p class="text-gray-500 max-w-sm mb-6">
+                            We couldn't find any profiles matching your search. Try broadening your criteria.
+                        </p>
+                        <a href="{{ route('roommates.index') }}" class="btn btn-outline">
+                            Clear Filters
+                        </a>
                     </div>
                 @endforelse
             </div>
@@ -248,7 +257,7 @@
                 </h3>
                 
                 {{-- Profile Selectors --}}
-                <div class="grid grid-2 gap-6" style="margin-bottom: 32px;">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                     <div>
                         <label style="display: block; font-size: 14px; font-weight: 500; color: var(--gray-700); margin-bottom: 8px;">Profile A (You)</label>
                         <select style="width: 100%; padding: 12px; border: 1px solid var(--gray-300); border-radius: 12px; font-size: 14px;">
@@ -257,7 +266,7 @@
                     </div>
                     <div>
                         <label style="display: block; font-size: 14px; font-weight: 500; color: var(--gray-700); margin-bottom: 8px;">Profile B (Compare with)</label>
-                        <select id="profileBSelect" style="width: 100%; padding: 12px; border: 1px solid var(--gray-300); border-radius: 12px; font-size: 14px;" onchange="showComparison()">
+                         <select id="profileBSelect" style="width: 100%; padding: 12px; border: 1px solid var(--gray-300); border-radius: 12px; font-size: 14px;" onchange="showComparison()">
                             <option value="">Select a profile to compare</option>
                             @foreach($profiles as $profile)
                                 <option value="{{ $profile->id }}">{{ $profile->display_name }} ({{ $profile->preferred_city }})</option>
@@ -285,7 +294,7 @@
                     {{-- Category Breakdown --}}
                     <div style="margin-bottom: 32px;">
                         <h4 style="font-size: 18px; font-weight: 600; color: var(--gray-900); margin-bottom: 16px;">Category Breakdown</h4>
-                        <div class="grid grid-2 gap-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {{-- Category Bars --}}
                             <div id="categoryBarsContainer">
                                 {{-- Filled via JS --}}
@@ -333,19 +342,24 @@
 
                     {{-- Action Buttons --}}
                     <div class="flex justify-center" style="gap: 16px;">
-                        <button class="btn btn-outline">
+                        <button id="compareSaveBtn" class="btn btn-outline" onclick="handleCompareSave()" disabled>
                             <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
                             </svg>
-                            Save Comparison
+                            <span id="compareSaveText">Save Comparison</span>
                         </button>
-                        <button class="btn btn-primary">
-                            <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
-                            </svg>
-                            Start Conversation
-                        </button>
-                        <button class="btn btn-outline">
+                        
+                        <form id="compareMessageForm" method="POST" action="#">
+                            @csrf
+                            <button id="compareMessageBtn" type="submit" class="btn btn-primary" disabled>
+                                <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                                </svg>
+                                Start Conversation
+                            </button>
+                        </form>
+
+                        <button id="compareShareBtn" class="btn btn-outline" onclick="handleCompareShare()" disabled>
                             <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
                             </svg>

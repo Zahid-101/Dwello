@@ -3,7 +3,7 @@
 @section('title', 'Log in - Dwello')
 
 @section('content')
-<div class="container" style="min-height: calc(100vh - 160px); display:flex; align-items:center; justify-content:center; padding: 40px 24px;">
+<div class="container mx-auto px-4 py-8 md:px-6" style="min-height: calc(100vh - 160px); display:flex; align-items:center; justify-content:center;">
     <div style="width:100%; max-width:420px; background:white; border-radius:20px; box-shadow:0 10px 15px -3px rgba(0,0,0,0.1); padding:24px;">
         <h2 style="font-family:'Poppins',sans-serif; font-size:24px; font-weight:600; margin-bottom:8px; color:var(--gray-900);">
             Welcome back 👋
@@ -36,7 +36,7 @@
             <div>
                 <label style="display:block; font-size:13px; font-weight:500; margin-bottom:4px;">Email</label>
                 <input
-                    class="input"
+                    class="input @error('email') border-red-500 @enderror"
                     style="width:100%; border-radius:12px;"
                     type="email"
                     name="email"
@@ -44,18 +44,24 @@
                     required
                     autofocus
                 >
+                @error('email')
+                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                @enderror
             </div>
 
             <div>
                 <label style="display:block; font-size:13px; font-weight:500; margin-bottom:4px;">Password</label>
                 <input
-                    class="input"
+                    class="input @error('password') border-red-500 @enderror"
                     style="width:100%; border-radius:12px;"
                     type="password"
                     name="password"
                     required
                     autocomplete="current-password"
                 >
+                @error('password')
+                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                @enderror
             </div>
 
             <div style="display:flex; justify-content:space-between; align-items:center; font-size:13px; margin-top:4px;">

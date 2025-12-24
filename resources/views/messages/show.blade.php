@@ -22,7 +22,7 @@
     $otherUser = $conversation->otherParticipant(auth()->id());
 @endphp
 
-<div class="container py-6">
+<div class="container mx-auto px-4 py-6 h-[calc(100vh-80px)]">
     <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden flex flex-col" style="height: calc(100vh - 140px);">
         <!-- Header -->
         <div class="p-4 border-b bg-white flex items-center justify-between shadow-sm z-10">

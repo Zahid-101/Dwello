@@ -4,11 +4,11 @@
 
 @section('content')
 <div style="background: var(--dwello-bg); padding: 40px 0 60px 0;">
-    <div class="container" style="display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 40px; align-items: center;">
+    <div class="container home-grid-container" style="display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 40px; align-items: center;">
 
         {{-- Left side: hero text --}}
         <div>
-            <h2 style="font-family:'Poppins',sans-serif; font-size: 36px; font-weight:700; color:var(--gray-900); margin-bottom:12px;">
+            <h2 class="home-hero-text" style="font-family:'Poppins',sans-serif; font-size: 36px; font-weight:700; color:var(--gray-900); margin-bottom:12px;">
                 Find a room and a flatmate<br>you actually vibe with.
             </h2>
             <p style="font-size:16px; color:var(--gray-600); margin-bottom:24px; max-width:480px;">

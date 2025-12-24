@@ -4,7 +4,7 @@
 @section('title', 'Messages - Dwello')
 
 @section('content')
-<div class="container py-8">
+<div class="container mx-auto px-4 py-8">
     <h1 class="text-2xl font-bold mb-6">Messages</h1>
 
     <div class="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">

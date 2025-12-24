@@ -131,6 +131,84 @@ function showComparison() {
 
         matchDetails.appendChild(detailDiv);
     });
+
+    // --- Button Activation ---
+    currentComparisonProfile = profile;
+
+    // 1. Message Button
+    const msgForm = document.getElementById('compareMessageForm');
+    const msgBtn = document.getElementById('compareMessageBtn');
+    if (msgForm && profile.user_id) {
+        msgForm.action = `/roommates/${profile.user_id}/message`;
+        msgBtn.disabled = false;
+    }
+
+    // 2. Save Button
+    const saveBtn = document.getElementById('compareSaveBtn');
+    if (saveBtn) {
+        saveBtn.disabled = false;
+        // Reset text
+        document.getElementById('compareSaveText').textContent = 'Save Comparison';
+    }
+
+    // 3. Share Button
+    const shareBtn = document.getElementById('compareShareBtn');
+    if (shareBtn) shareBtn.disabled = false;
+}
+
+// Global state for comparison
+let currentComparisonProfile = null;
+
+function handleCompareSave() {
+    if (!currentComparisonProfile) return;
+
+    // Reuse toggle favorites logic or simplifed version
+    // We send request to /favorites/{id}
+    const profileId = currentComparisonProfile.id;
+    const btn = document.getElementById('compareSaveBtn');
+    const txt = document.getElementById('compareSaveText');
+
+    fetch(`/favorites/${profileId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json'
+        }
+    })
+        .then(res => res.json())
+        .then(data => {
+            if (data.saved) {
+                btn.classList.add('btn-primary');
+                btn.classList.remove('btn-outline');
+                if (txt) txt.textContent = 'Saved!';
+            } else {
+                btn.classList.remove('btn-primary');
+                btn.classList.add('btn-outline');
+                if (txt) txt.textContent = 'Save Comparison';
+            }
+        })
+        .catch(err => console.error(err));
+}
+
+function handleCompareShare() {
+    if (!currentComparisonProfile) return;
+
+    const url = window.location.origin + '/roommates/' + currentComparisonProfile.id;
+
+    navigator.clipboard.writeText(url).then(() => {
+        const btn = document.getElementById('compareShareBtn');
+        const originalText = btn.innerHTML; // contain svg
+
+        // Show temporary feedback
+        btn.innerHTML = '<span>Link Copied!</span>';
+        setTimeout(() => {
+            btn.innerHTML = originalText;
+        }, 2000);
+    }).catch(err => {
+        console.error('Failed to copy', err);
+        alert('Could not copy link. URL: ' + url);
+    });
 }
 
 function calculateCompatibility(me, them) {

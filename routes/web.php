@@ -42,12 +42,19 @@ Route::middleware('auth')->group(function () {
     Route::get('/select-role', [\App\Http\Controllers\RoleSelectionController::class, 'show'])->name('role.select');
     Route::post('/select-role', [\App\Http\Controllers\RoleSelectionController::class, 'store'])->name('role.store');
 
-    // Property creation (Landlords only)
+    // Property creation & management (Landlords only)
     Route::middleware(['role:landlord'])->group(function () {
         Route::get('/properties/create', [PropertyController::class, 'create'])
             ->name('properties.create');
         Route::post('/properties', [PropertyController::class, 'store'])
             ->name('properties.store');
+        
+        Route::get('/properties/{property}/edit', [PropertyController::class, 'edit'])
+            ->name('properties.edit');
+        Route::put('/properties/{property}', [PropertyController::class, 'update'])
+            ->name('properties.update');
+        Route::delete('/properties/{property}', [PropertyController::class, 'destroy'])
+            ->name('properties.destroy');
     });
 
     // Roommate profile create/update (Seekers only)
