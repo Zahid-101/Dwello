@@ -14,7 +14,6 @@ use App\Http\Controllers\FavoriteController;
 |--------------------------------------------------------------------------
 */
 
-// Landing page
 Route::get('/', function () {
     return view('home');
 })->name('home');

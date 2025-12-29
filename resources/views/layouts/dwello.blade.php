@@ -83,9 +83,24 @@
                     {{-- Auth Buttons --}}
                     <div class="flex items-center" style="gap: 16px;">
                         @guest
-                            <button type="button" class="btn btn-primary" onclick="window.location.href='{{ route('login') }}'">
+                        {{-- Desktop Login Dropdown --}}
+                        <div style="position: relative;" id="loginDropdownWrapper">
+                            <button type="button" class="btn btn-primary" onclick="toggleLoginDropdown()" style="display: flex; align-items: center; gap: 8px;">
                                 Login
+                                <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
                             </button>
+                            <div id="loginDropdownMenu" style="display: none; position: absolute; right: 0; top: 100%; margin-top: 8px; width: 200px; background: white; border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); padding: 8px 0; z-index: 100; border: 1px solid var(--gray-200);">
+                                <a href="{{ route('login', ['role' => 'tenant']) }}" style="display: block; padding: 10px 16px; color: var(--gray-700); text-decoration: none; font-size: 14px; transition: background 0.2s;" onmouseover="this.style.background='var(--gray-50)'" onmouseout="this.style.background='transparent'">
+                                    Login as Tenant
+                                </a>
+                                <div style="height: 1px; background: var(--gray-100); margin: 4px 0;"></div>
+                                <a href="{{ route('login', ['role' => 'landlord']) }}" style="display: block; padding: 10px 16px; color: var(--gray-700); text-decoration: none; font-size: 14px; transition: background 0.2s;" onmouseover="this.style.background='var(--gray-50)'" onmouseout="this.style.background='transparent'">
+                                    Login as Landlord
+                                </a>
+                            </div>
+                        </div>
                         @else
                             @auth
                                 <a href="{{ route('roommate-profiles.create') }}" style="
@@ -158,9 +173,12 @@
                             <button class="w-full text-left block px-3 py-2 text-base font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded-md" type="submit">Logout</button>
                         </form>
                     @else
-                        <div class="pt-4 pb-2">
-                             <a href="{{ route('login') }}" class="block w-full text-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-orange-500 hover:bg-orange-600">
-                                Login
+                        <div class="pt-4 pb-2 space-y-2 px-4">
+                             <a href="{{ route('login', ['role' => 'tenant']) }}" class="block w-full text-center px-4 py-2 border border-orange-500 rounded-md shadow-sm text-base font-medium text-orange-500 bg-white hover:bg-orange-50">
+                                Login as Tenant
+                            </a>
+                            <a href="{{ route('login', ['role' => 'landlord']) }}" class="block w-full text-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-orange-500 hover:bg-orange-600">
+                                Login as Landlord
                             </a>
                         </div>
                     @endauth
@@ -180,6 +198,25 @@
                         menu.style.display = 'none';
                     }
                 });
+
+            // Login Dropdown Logic
+            window.toggleLoginDropdown = function() {
+                const menu = document.getElementById('loginDropdownMenu');
+                if (menu.style.display === 'none' || menu.style.display === '') {
+                    menu.style.display = 'block';
+                } else {
+                    menu.style.display = 'none';
+                }
+            }
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(event) {
+                const wrapper = document.getElementById('loginDropdownWrapper');
+                const menu = document.getElementById('loginDropdownMenu');
+                if (wrapper && !wrapper.contains(event.target) && menu.style.display === 'block') {
+                    menu.style.display = 'none';
+                }
+            });
         });
     </script>
 

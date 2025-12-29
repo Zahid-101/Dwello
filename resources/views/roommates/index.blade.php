@@ -147,15 +147,36 @@
                         {{-- Compatibility Ring --}}
                         <div class="compatibility-ring" style="margin-bottom: 20px;">
                             <svg width="120" height="120">
-                                <circle cx="60" cy="60" r="54" stroke="#E5E7EB" stroke-width="8" fill="none"/>
-                                <circle cx="60" cy="60" r="54" 
-                                        stroke="{{ $strokeColor }}" 
-                                        stroke-width="8" fill="none" 
-                                        stroke-dasharray="339.3" 
-                                        stroke-dashoffset="{{ $offset }}" 
-                                        stroke-linecap="round"/>
+                                {{-- Background Circle --}}
+                                <circle cx="60" cy="60" r="54" stroke="#f3f4f6" stroke-width="8" fill="none" 
+                                    @guest stroke-dasharray="8 4" @endguest 
+                                />
+                                
+                                @auth
+                                    {{-- Filled Circle (Only for auth) --}}
+                                    <circle cx="60" cy="60" r="54" 
+                                            stroke="{{ $strokeColor }}" 
+                                            stroke-width="8" fill="none" 
+                                            stroke-dasharray="339.3" 
+                                            stroke-dashoffset="{{ $offset }}" 
+                                            stroke-linecap="round"
+                                            style="transition: stroke-dashoffset 1s ease-out;"
+                                    />
+                                @endauth
                             </svg>
-                            <div class="percentage">{{ $compatibility }}%</div>
+                            
+                            <div class="percentage" style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;">
+                                @auth
+                                    <span style="font-size: 24px; font-weight: 700; color: var(--gray-900);">{{ $compatibility }}<span style="font-size: 14px;">%</span></span>
+                                @else
+                                    <a href="{{ route('login', ['role' => 'tenant']) }}" style="text-decoration: none; display: flex; flex-direction: column; align-items: center; color: var(--gray-400); transition: all 0.2s;" onmouseover="this.style.color='var(--dwello-primary)'" onmouseout="this.style.color='var(--gray-400)'">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 24px; height: 24px; margin-bottom: 2px;">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                                        </svg>
+                                        <span style="font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Unlock</span>
+                                    </a>
+                                @endauth
+                            </div>
                         </div>
 
                         {{-- Compatibility Chips --}}
