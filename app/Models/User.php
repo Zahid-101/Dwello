@@ -23,6 +23,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
     ];
 
     /**
@@ -56,5 +57,33 @@ class User extends Authenticatable
     public function roommateProfile()
     {
         return $this->hasOne(RoommateProfile::class);
+    }
+
+    public function favorites()
+    {
+        return $this->belongsToMany(RoommateProfile::class, 'favorites', 'user_id', 'roommate_profile_id')
+            ->withTimestamps();
+    }
+
+    public function isLandlord(): bool
+    {
+        return $this->role === 'landlord';
+    }
+
+    public function isSeeker(): bool // Roommate Seeker/Tenant
+    {
+        return $this->role === 'seeker';
+    }
+
+    public function reviews()
+    {
+        return $this->hasMany(\App\Models\Review::class);
+    }
+
+    public function isAdmin(): bool
+    {
+        // Simple admin check based on .env config or specific email
+        // Logic: if email matches config OR role is 'admin' (if we had that role)
+        return $this->email === config('app.admin_email', 'admin@dwello.com');
     }
 }

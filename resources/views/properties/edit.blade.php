@@ -1,15 +1,15 @@
 @extends('layouts.dwello')
 
-@section('title', 'List a Property - Dwello')
+@section('title', 'Edit Property - Dwello')
 
 @section('content')
 <div class="container mx-auto px-4 py-8 md:px-6">
     <div style="max-width: 800px; margin: 0 auto; background: white; border-radius: 20px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); padding: 24px;">
         <h2 style="font-size: 24px; font-family: 'Poppins', sans-serif; font-weight: 600; margin-bottom: 16px;">
-            List a room or property
+            Edit Property
         </h2>
         <p style="color: var(--gray-600); margin-bottom: 24px;">
-            Fill in the details below. Verified listings perform better in search.
+            Update the details of your property listing.
         </p>
 
         @if ($errors->any())
@@ -22,13 +22,14 @@
             </div>
         @endif
 
-        <form method="POST" action="{{ route('properties.store') }}" class="space-y-4" enctype="multipart/form-data">
+        <form method="POST" action="{{ route('properties.update', $property) }}" class="space-y-4" enctype="multipart/form-data">
             @csrf
+            @method('PUT')
 
             <div style="margin-bottom: 16px;">
                 <label style="display:block; font-size: 14px; font-weight:500; margin-bottom:6px;">Title</label>
                 <input class="input @error('title') border-red-500 @enderror" style="width:100%; border-radius:12px;"
-                       name="title" value="{{ old('title') }}" required>
+                       name="title" value="{{ old('title', $property->title) }}" required>
                 @error('title')
                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                 @enderror
@@ -37,20 +38,17 @@
             <div style="margin-bottom: 16px;">
                 <label style="display:block; font-size: 14px; font-weight:500; margin-bottom:6px;">Description</label>
                 <textarea class="input @error('description') border-red-500 @enderror" style="width:100%; border-radius:12px; min-height:100px;"
-                          name="description">{{ old('description') }}</textarea>
+                          name="description">{{ old('description', $property->description) }}</textarea>
                 @error('description')
                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                 @enderror
             </div>
 
             <div style="margin-bottom: 16px;">
-                <label style="display:block; font-size: 14px; font-weight:500; margin-bottom:6px;">Photos (Max 6)</label>
+                <label style="display:block; font-size: 14px; font-weight:500; margin-bottom:6px;">Add More Photos (Optional)</label>
                 <input type="file" name="photos[]" multiple accept="image/*" class="input @error('photos') border-red-500 @enderror @error('photos.*') border-red-500 @enderror" style="width:100%; border-radius:12px; padding: 10px;">
-                <p style="font-size: 12px; color: var(--gray-500); margin-top: 4px;">Supported formats: JPEG, PNG, WEBP. Max 2MB each.</p>
+                <p style="font-size: 12px; color: var(--gray-500); margin-top: 4px;">Existing photos remain. New photos will be added.</p>
                 @error('photos')
-                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                @enderror
-                @error('photos.*')
                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                 @enderror
             </div>
@@ -61,7 +59,7 @@
                     <select class="input @error('city') border-red-500 @enderror" id="city" style="width:100%; border-radius:12px;" name="city" required>
                         <option value="">Select City</option>
                         @foreach(config('cities') as $city)
-                            <option value="{{ $city }}" {{ old('city') == $city ? 'selected' : '' }}>{{ $city }}</option>
+                            <option value="{{ $city }}" {{ old('city', $property->city) == $city ? 'selected' : '' }}>{{ $city }}</option>
                         @endforeach
                     </select>
                     @error('city')
@@ -71,7 +69,7 @@
                 <div>
                     <label style="display:block; font-size: 14px; font-weight:500; margin-bottom:6px;">Address</label>
                     <input class="input @error('address') border-red-500 @enderror" id="address" style="width:100%; border-radius:12px;"
-                           name="address" value="{{ old('address') }}" required>
+                           name="address" value="{{ old('address', $property->address) }}" required>
                     @error('address')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
@@ -82,7 +80,7 @@
                 <div>
                     <label style="display:block; font-size: 14px; font-weight:500; margin-bottom:6px;">Monthly Rent (LKR)</label>
                     <input type="number" step="100" min="0" class="input @error('monthly_rent') border-red-500 @enderror" style="width:100%; border-radius:12px;"
-                           name="monthly_rent" value="{{ old('monthly_rent') }}" required>
+                           name="monthly_rent" value="{{ old('monthly_rent', $property->monthly_rent) }}" required>
                     @error('monthly_rent')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
@@ -90,7 +88,7 @@
                 <div>
                     <label style="display:block; font-size: 14px; font-weight:500; margin-bottom:6px;">Bedrooms</label>
                     <input type="number" min="0" class="input @error('bedrooms') border-red-500 @enderror" style="width:100%; border-radius:12px;"
-                           name="bedrooms" value="{{ old('bedrooms',1) }}" required>
+                           name="bedrooms" value="{{ old('bedrooms', $property->bedrooms) }}" required>
                     @error('bedrooms')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
@@ -98,7 +96,7 @@
                 <div>
                     <label style="display:block; font-size: 14px; font-weight:500; margin-bottom:6px;">Bathrooms</label>
                     <input type="number" min="0" class="input @error('bathrooms') border-red-500 @enderror" style="width:100%; border-radius:12px;"
-                           name="bathrooms" value="{{ old('bathrooms',1) }}" required>
+                           name="bathrooms" value="{{ old('bathrooms', $property->bathrooms) }}" required>
                     @error('bathrooms')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
@@ -110,9 +108,9 @@
                     <label style="display:block; font-size: 14px; font-weight:500; margin-bottom:6px;">Property Type</label>
                     <select class="input @error('property_type') border-red-500 @enderror" style="width:100%; border-radius:12px;"
                             name="property_type" required>
-                        <option value="room" {{ old('property_type') == 'room' ? 'selected' : '' }}>Room</option>
-                        <option value="apartment" {{ old('property_type') == 'apartment' ? 'selected' : '' }}>Apartment</option>
-                        <option value="house" {{ old('property_type') == 'house' ? 'selected' : '' }}>House</option>
+                        <option value="room" {{ old('property_type', $property->property_type) == 'room' ? 'selected' : '' }}>Room</option>
+                        <option value="apartment" {{ old('property_type', $property->property_type) == 'apartment' ? 'selected' : '' }}>Apartment</option>
+                        <option value="house" {{ old('property_type', $property->property_type) == 'house' ? 'selected' : '' }}>House</option>
                     </select>
                     @error('property_type')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -121,7 +119,7 @@
                 <div>
                     <label style="display:block; font-size: 14px; font-weight:500; margin-bottom:6px;">Available From</label>
                     <input type="date" class="input @error('available_from') border-red-500 @enderror" style="width:100%; border-radius:12px;"
-                           name="available_from" value="{{ old('available_from') }}">
+                           name="available_from" value="{{ old('available_from', $property->available_from ? \Carbon\Carbon::parse($property->available_from)->format('Y-m-d') : '') }}">
                     @error('available_from')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
@@ -129,8 +127,8 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6" style="margin-bottom: 24px;">
-                    <input type="hidden" name="latitude" id="latitude" value="{{ old('latitude') }}">
-                    <input type="hidden" name="longitude" id="longitude" value="{{ old('longitude') }}">
+                    <input type="hidden" name="latitude" id="latitude" value="{{ old('latitude', $property->latitude) }}">
+                    <input type="hidden" name="longitude" id="longitude" value="{{ old('longitude', $property->longitude) }}">
             </div>
             
             <div style="margin-bottom: 24px;">
@@ -139,45 +137,39 @@
             </div>
 
             <div class="flex justify-end" style="gap: 12px;">
-                <a href="{{ route('properties.index') }}" class="btn btn-outline">Cancel</a>
-                <button class="btn btn-primary" type="submit">Save Listing</button>
+                <a href="{{ route('properties.show', $property) }}" class="btn btn-outline">Cancel</a>
+                <button class="btn btn-primary" type="submit">Update Listing</button>
             </div>
         </form>
     </div>
 </div>
 @endsection
-{{--Automatic loaction for our lat and long from address given--}}
+
 @push('form-scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    // Block 'e', 'E', '+', '-' from number inputs
     const numberInputs = document.querySelectorAll('input[type="number"]');
     numberInputs.forEach(input => {
         input.addEventListener('keydown', function(e) {
-            if (['e', 'E', '+', '-'].includes(e.key)) {
-                e.preventDefault();
-            }
+            if (['e', 'E', '+', '-'].includes(e.key)) e.preventDefault();
         });
     });
-
-    console.log('Starting map & geocoding script...');
 
     const cityInput = document.getElementById('city');
     const addressInput = document.getElementById('address');
     const latInput = document.getElementById('latitude');
     const lngInput = document.getElementById('longitude');
     
-    // Default Colombo
+    // Default or Existing
     let mapCenter = [6.9271, 79.8612]; 
     let mapZoom = 13;
+    let initialLat = parseFloat(latInput.value);
+    let initialLng = parseFloat(lngInput.value);
 
-    // Check if we have existing values (old input) to center map
-    if (latInput.value && lngInput.value) {
-        mapCenter = [parseFloat(latInput.value), parseFloat(lngInput.value)];
-         // visual map center logic handled below
+    if (!isNaN(initialLat) && !isNaN(initialLng)) {
+        mapCenter = [initialLat, initialLng];
     }
 
-    // Initialize Map
     var map = L.map('map').setView(mapCenter, mapZoom);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -187,7 +179,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var marker;
 
-    // Function to set marker
     function setMarker(lat, lng) {
         if (marker) {
             marker.setLatLng([lat, lng]);
@@ -202,29 +193,24 @@ document.addEventListener('DOMContentLoaded', function () {
         updateInputs(lat, lng);
     }
 
-    // Function to update hidden inputs
     function updateInputs(lat, lng) {
         latInput.value = lat;
         lngInput.value = lng;
     }
 
-    // If we had initial values, set marker
-    if (latInput.value && lngInput.value) {
-        setMarker(parseFloat(latInput.value), parseFloat(lngInput.value));
+    if (!isNaN(initialLat) && !isNaN(initialLng)) {
+        setMarker(initialLat, initialLng);
     }
 
-    // Map click listener
     map.on('click', function(e) {
         setMarker(e.latlng.lat, e.latlng.lng);
     });
     
     // Geocoding Logic
     let debounceTimer = null;
-    
     async function fetchCoordinates() {
         const city = cityInput.value.trim();
         const address = addressInput.value.trim();
-        
         if (city.length < 2) return; 
         
         const query = `${address ? address + ', ' : ''}${city}, Sri Lanka`;
@@ -233,27 +219,20 @@ document.addEventListener('DOMContentLoaded', function () {
         try {
             const response = await fetch(url);
             if (!response.ok) return;
-            
             const data = await response.json();
             if (data && data.length > 0) {
-                const lat = parseFloat(data[0].lat);
-                const lon = parseFloat(data[0].lon);
-                setMarker(lat, lon);
+                setMarker(parseFloat(data[0].lat), parseFloat(data[0].lon));
             }
         } catch (error) {
             console.error('Geocoding failed:', error);
         }
     }
     
-    // Listeners for geocoding
-    cityInput.addEventListener('change', fetchCoordinates); // Changed input to change for select
-    
+    cityInput.addEventListener('change', fetchCoordinates);
     addressInput.addEventListener('input', () => {
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(fetchCoordinates, 1500);
     });
-
-    // Handle form submit just in case (optional, validation handled by required attributes)
 });
 </script>
 @endpush

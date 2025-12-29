@@ -23,6 +23,21 @@
                     <x-nav-link :href="route('roommates.index')" :active="request()->routeIs('roommates.*')">
                         {{ __('Roommates') }}
                     </x-nav-link>
+
+                    <x-nav-link :href="route('messages.index')" :active="request()->routeIs('messages.*')">
+                        {{ __('Messages') }}
+                        @if(isset($unreadMessagesCount) && $unreadMessagesCount > 0)
+                            <span class="ms-2 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full">
+                                {{ $unreadMessagesCount > 99 ? '99+' : $unreadMessagesCount }}
+                            </span>
+                        @endif
+                    </x-nav-link>
+
+                    @if(auth()->user()->isAdmin())
+                        <x-nav-link :href="route('admin.reviews.index')" :active="request()->routeIs('admin.*')">
+                            {{ __('Admin') }}
+                        </x-nav-link>
+                    @endif
                 </div>
             </div>
 
@@ -31,7 +46,12 @@
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
                         <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none transition ease-in-out duration-150">
-                            <div>{{ Auth::user()->name }}</div>
+                            <div>
+                                {{ Auth::user()->name }}
+                                @if(isset($unreadMessagesCount) && $unreadMessagesCount > 0)
+                                    <span class="ms-1 w-2 h-2 bg-red-600 rounded-full inline-block"></span>
+                                @endif
+                            </div>
 
                             <div class="ms-1">
                                 <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">

@@ -1,0 +1,127 @@
+/* Mobile Overrides for Dwello */
+@media (max-width: 640px) {
+
+    /* Home Page */
+    .home-grid-container {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 40px !important;
+    }
+
+    .home-hero-text h2 {
+        font-size: 28px !important;
+    }
+
+    /* Layout Footer */
+    .layout-footer-grid {
+        grid-template-columns: 1fr !important;
+        gap: 32px !important;
+    }
+
+    /* Properties Show */
+    .property-show-grid {
+        display: flex !important;
+        flex-direction: column !important;
+    }
+
+    .property-gallery-grid {
+        grid-template-columns: 1fr !important;
+        height: auto !important;
+    }
+
+    .property-gallery-side {
+        display: none !important;
+    }
+
+    .property-gallery-main {
+        height: 300px !important;
+        width: 100% !important;
+    }
+
+    .feature-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    /* Roommates Show */
+    .roommate-show-grid {
+        display: flex !important;
+        flex-direction: column !important;
+    }
+
+    .roommate-inner-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .roommate-header {
+        flex-direction: column !important;
+        text-align: center !important;
+    }
+
+    /* Message Containers */
+    .message-container-height {
+        height: calc(100vh - 80px) !important;
+    }
+
+    /* Properties/Roommates Index Layout */
+    .listing-layout {
+        flex-direction: column !important;
+    }
+
+    .listing-sidebar {
+        width: 100% !important;
+        max-width: none !important;
+        border-right: none !important;
+        border-bottom: 1px solid #e5e7eb !important;
+    }
+
+    .reviews-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .review-section-container {
+        padding: 20px !important;
+        width: 100% !important;
+    }
+
+    .roommate-index-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Navbar Visibility Overrides (match md breakpoint approx or strict mobile) */
+    .desktop-nav {
+        display: none !important;
+    }
+
+    .mobile-menu-btn {
+        display: block !important;
+    }
+
+    /* Property Index Map */
+    .map-container {
+        width: 100% !important;
+        height: 300px !important;
+        position: relative !important;
+        order: -1 !important;
+        /* Move map to top on mobile overrides */
+    }
+
+    /* Property Card Row */
+    .property-card-row {
+        flex-direction: column !important;
+    }
+
+    .property-card-img {
+        width: 100% !important;
+    }
+}
+
+/* Ensure mobile menu button is hidden on desktop (redundant safety) */
+@media (min-width: 641px) {
+    .mobile-menu-btn {
+        display: none !important;
+    }
+
+    .desktop-nav {
+        display: flex !important;
+    }
+}
