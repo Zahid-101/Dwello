@@ -222,6 +222,14 @@
                                 </button>
                             </form>
                         </div>
+                        
+                        <div style="margin-top: 12px; text-align: center;">
+                            <button class="text-xs text-gray-400 hover:text-red-500 transition" 
+                                    data-id="{{ $profile->user_id }}" 
+                                    onclick="rejectUser(this)">
+                                Not interested
+                            </button>
+                        </div>
                     </div>
                 @empty
                     <div class="col-span-1 md:col-span-3 flex flex-col items-center justify-center py-12 text-center bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
@@ -392,6 +400,7 @@
 
         // Pass server data to JS
         window.serverProfiles = @json($profiles->items());
+        window.userProfile = @json($userProfile);
         window.userProfile = @json(auth()->user() ? auth()->user()->roommateProfile : null);
         
         // Debug

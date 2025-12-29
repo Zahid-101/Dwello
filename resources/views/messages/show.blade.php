@@ -54,7 +54,12 @@
         </div>
 
         <!-- Chat Area -->
-        <div id="chat-messages" class="chat-messages p-4 bg-gray-50">
+        <div id="chat-messages" class="chat-messages p-4 bg-gray-50 relative">
+            <div class="text-center mb-4">
+                <button id="loadOlderBtn" class="text-xs text-blue-500 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded-full transition">
+                    Load Older Messages
+                </button>
+            </div>
             @foreach($messages as $message)
                 @php $isMine = $message->sender_id == auth()->id(); @endphp
                 <div class="message-wrapper {{ $isMine ? 'items-end' : 'items-start' }}" data-id="{{ $message->id }}">
@@ -70,7 +75,7 @@
 
         <!-- Input Area -->
         <div class="p-4 bg-white border-t">
-            <form id="chat-form" class="flex items-end gap-3" data-conversation-id="{{ $conversation->id }}">
+            <form id="chat-form" class="flex items-end gap-3 no-loader" data-conversation-id="{{ $conversation->id }}">
                 <div class="flex-1">
                     <textarea 
                         id="message-input" 
@@ -92,7 +97,7 @@
     <script>
         window.authUserId = {{ auth()->id() }};
     </script>
-    <script src="{{ asset('js/chat.js') }}"></script>
+    <script src="{{ asset('js/chat.js') }}?v={{ time() }}"></script>
     <script>
         // Auto-resize textarea
         const textarea = document.getElementById('message-input');

@@ -67,6 +67,9 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/roommates/{user}/compatibility', [RoommateProfileController::class, 'compatibility'])
         ->name('roommates.compatibility');
+    
+    Route::post('/roommates/{user}/reject', [RoommateProfileController::class, 'reject'])
+        ->name('roommates.reject');
 
     // Dashboard just redirects to main app (properties)
     Route::get('/dashboard', function () {

@@ -88,8 +88,11 @@ class RoommateProfileController extends Controller
         
         // Remove self from matches list generally?
         if (auth()->check()) {
-            $profilesCollection = $profilesCollection->filter(function ($profile) {
-                return $profile->user_id !== auth()->id();
+            $userId = auth()->id();
+            $rejectedIds = auth()->user()->rejectedUsers()->pluck('rejected_user_id')->toArray();
+            
+            $profilesCollection = $profilesCollection->filter(function ($profile) use ($userId, $rejectedIds) {
+                return $profile->user_id !== $userId && !in_array($profile->user_id, $rejectedIds);
             });
         }
 
@@ -112,6 +115,7 @@ class RoommateProfileController extends Controller
             case 'best_match':
             default:
                 // Sort by compatibility score, then by created_at as tie breaker
+                // Deprioritize "dealbreakers" (score 0) - though we might just filter them out if stricter
                 $profilesCollection = $profilesCollection->sortByDesc(function ($profile) {
                     return [(int) $profile->compatibility_score, $profile->created_at];
                 });
@@ -131,7 +135,7 @@ class RoommateProfileController extends Controller
             ['path' => \Illuminate\Pagination\Paginator::resolveCurrentPath(), 'query' => $request->query()]
         );
 
-        return view('roommates.index', compact('profiles'));
+        return view('roommates.index', ['profiles' => $profiles, 'userProfile' => $viewerProfile]);
     }
 
     // Show form to create / update current user's profile
@@ -231,5 +235,16 @@ class RoommateProfileController extends Controller
         $result = $this->compatibilityService->calculate($viewerProfile, $targetProfile);
 
         return response()->json($result);
+    }
+    
+    public function reject(User $user)
+    {
+        if (auth()->id() === $user->id) {
+             return response()->json(['error' => 'Cannot reject yourself'], 400);
+        }
+        
+        auth()->user()->rejectedUsers()->syncWithoutDetaching([$user->id]);
+        
+        return response()->json(['success' => true]);
     }
 }

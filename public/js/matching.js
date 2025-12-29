@@ -55,6 +55,41 @@ function toggleSaved(element) {
         .catch(err => console.error('Error toggling favorite:', err));
 }
 
+// Reject User Logic
+function rejectUser(element) {
+    if (!confirm('Are you sure you want to remove this profile from your suggestions?')) return;
+
+    const profileId = element.dataset.id;
+    // Assuming data-id on the button corresponds to the USER ID, not profile ID, 
+    // because our route is /roommates/{user}/reject.
+    // We need to ensure the button has the user ID.
+
+    if (!profileId) return;
+
+    fetch(`/roommates/${profileId}/reject`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json'
+        }
+    })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                // Remove card from DOM
+                const card = element.closest('.profile-card');
+                if (card) {
+                    card.style.transition = 'all 0.3s ease';
+                    card.style.opacity = '0';
+                    card.style.transform = 'scale(0.9)';
+                    setTimeout(() => card.remove(), 300);
+                }
+            }
+        })
+        .catch(err => console.error('Error rejecting user:', err));
+}
+
 // Show comparison results
 function showComparison() {
     const selectedProfileId = document.getElementById('profileBSelect').value;

@@ -26,8 +26,38 @@ document.addEventListener('DOMContentLoaded', function () {
     // Initial scroll
     scrollToBottom();
 
+    // --- Helper: Show Toast ---
+    const showToast = (message, type = 'success') => {
+        let container = document.getElementById('toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'toast-container';
+            container.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px;';
+            document.body.appendChild(container);
+        }
+
+        const toast = document.createElement('div');
+        toast.textContent = message;
+        toast.style.cssText = `
+            background: ${type === 'success' ? '#10B981' : '#EF4444'};
+            color: white; padding: 12px 24px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            font-size: 14px; font-weight: 500; opacity: 0; transform: translateY(-20px); transition: all 0.3s ease;
+        `;
+
+        container.appendChild(toast);
+        requestAnimationFrame(() => {
+            toast.style.opacity = '1';
+            toast.style.transform = 'translateY(0)';
+        });
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(-20px)';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    };
+
     // Helper: Append message to UI
-    const appendMessage = (message) => {
+    const appendMessage = (message, prepend = false) => {
         // Check for duplicates
         if (document.querySelector(`.message-wrapper[data-id="${message.id}"]`)) return;
 
@@ -38,12 +68,14 @@ document.addEventListener('DOMContentLoaded', function () {
         wrapper.dataset.id = message.id;
 
         const bubble = document.createElement('div');
-        // Add opacity transition for "appearing" effect
-        bubble.style.opacity = '0';
-        bubble.style.transition = 'opacity 0.3s ease';
-
         bubble.className = `message-bubble ${isMine ? 'mine' : 'theirs'}`;
-        bubble.textContent = message.body;
+
+        // Linkify (Simple)
+        const linkified = message.body
+            .replace(/(\b[\w\.-]+@[\w\.-]+\.\w{2,4}\b)/g, '<a href="mailto:$1" style="text-decoration:underline; color:inherit;">$1</a>')
+            .replace(/(\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,9})/g, '<a href="tel:$1" style="text-decoration:underline; color:inherit;">$1</a>');
+
+        bubble.innerHTML = linkified;
 
         const time = document.createElement('div');
         time.className = 'message-time';
@@ -54,32 +86,93 @@ document.addEventListener('DOMContentLoaded', function () {
 
         wrapper.appendChild(bubble);
         wrapper.appendChild(time);
-        messagesContainer.appendChild(wrapper);
 
-        // Trigger reflow/animation
-        requestAnimationFrame(() => {
-            bubble.style.opacity = '1';
-        });
+        if (prepend) {
+            // Insert after the load more button if it exists, or at top
+            const loadBtnContainer = document.querySelector('#loadOlderBtn')?.parentNode;
+            if (loadBtnContainer && loadBtnContainer.parentNode === messagesContainer) {
+                messagesContainer.insertBefore(wrapper, loadBtnContainer.nextSibling);
+            } else {
+                messagesContainer.insertBefore(wrapper, messagesContainer.firstChild);
+            }
+        } else {
+            bubble.style.opacity = '0';
+            bubble.style.transition = 'opacity 0.3s ease';
+            messagesContainer.appendChild(wrapper);
+            requestAnimationFrame(() => {
+                bubble.style.opacity = '1';
+            });
+            scrollToBottom();
+        }
+    };
 
-        scrollToBottom();
+    // --- Input Validation ---
+    const updateSendButton = () => {
+        if (!sendButton) return;
+        const isValid = messageInput.value.trim().length > 0;
+        sendButton.disabled = !isValid;
+        sendButton.style.opacity = isValid ? '1' : '0.5';
+        sendButton.style.cursor = isValid ? 'pointer' : 'not-allowed';
+    };
+
+    messageInput.addEventListener('input', updateSendButton);
+    updateSendButton();
+
+    // State for sending
+    let isSending = false;
+
+    // Capture original button content on load
+    if (sendButton) {
+        // Ensure we don't capture a spinner if the page somehow loaded with it
+        if (!sendButton.innerHTML.includes('animate-spin')) {
+            sendButton.dataset.defaultContent = sendButton.innerHTML;
+        } else {
+            sendButton.dataset.defaultContent = 'Send';
+        }
+    }
+
+    // Helper: Reset button state strictly
+    const resetButtonState = () => {
+        if (!sendButton) return;
+
+        isSending = false;
+        sendButton.disabled = false;
+
+        // Restore text
+        if (sendButton.dataset.defaultContent) {
+            sendButton.innerHTML = sendButton.dataset.defaultContent;
+        } else {
+            sendButton.textContent = 'Send';
+        }
+
+        updateSendButton();
     };
 
     // Handle Submit
     chatForm.addEventListener('submit', async function (e) {
-        e.preventDefault();
+        if (e.cancelable) e.preventDefault();
+
+        if (isSending) return;
+
         const body = messageInput.value.trim();
         if (!body) return;
 
-        // UI Optimistic Updates / Loading State
-        messageInput.value = '';
-        messageInput.style.height = 'auto'; // Reset auto-resize
-        messageInput.focus();
+        isSending = true;
 
-        // Disable button optionally or show spinner
+        // UI Optimistic Updates
+        messageInput.value = '';
+        messageInput.style.height = 'auto';
+        messageInput.focus();
+        updateSendButton();
+
+        // Force enable and show spinner
         if (sendButton) {
-            const originalText = sendButton.innerHTML;
             sendButton.disabled = true;
-            sendButton.innerHTML = '<span class="animate-spin">↻</span>'; // Simple spinner
+            sendButton.innerHTML = '<span class="animate-spin" style="display:inline-block; animation: spin 1s linear infinite;">↻</span>';
+
+            // Timeout Controller
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000);
 
             try {
                 const response = await fetch(`/messages/${conversationId}`, {
@@ -89,24 +182,29 @@ document.addEventListener('DOMContentLoaded', function () {
                         'X-CSRF-TOKEN': getCsrfToken(),
                         'Accept': 'application/json'
                     },
-                    body: JSON.stringify({ body: body })
+                    body: JSON.stringify({ body: body }),
+                    signal: controller.signal
                 });
+
+                clearTimeout(timeoutId);
 
                 if (!response.ok) throw new Error('Send failed');
 
                 const message = await response.json();
-
-                // Ensure ID types match for comparison
                 message.sender_id = parseInt(message.sender_id);
 
                 appendMessage(message);
+                showToast('Message sent', 'success');
             } catch (error) {
-                console.error('Error sending message:', error);
-                alert('Failed to send message.');
-                messageInput.value = body; // Restore input
+                if (error.name === 'AbortError') {
+                    showToast('Request timed out', 'error');
+                } else {
+                    console.error('Error sending message:', error);
+                    showToast('Failed to send message', 'error');
+                }
+                messageInput.value = body;
             } finally {
-                sendButton.disabled = false;
-                sendButton.innerHTML = originalText;
+                resetButtonState();
             }
         }
     });
@@ -115,7 +213,13 @@ document.addEventListener('DOMContentLoaded', function () {
     messageInput.addEventListener('keydown', function (e) {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
-            chatForm.dispatchEvent(new Event('submit'));
+            if (!isSending) {
+                const event = new Event('submit', {
+                    bubbles: true,
+                    cancelable: true
+                });
+                chatForm.dispatchEvent(event);
+            }
         }
     });
 
@@ -157,6 +261,74 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Start Polling
     const pollInterval = setInterval(pollMessages, 5000); // 5 seconds
+
+    // --- Load Older Messages Logic ---
+    const loadOlderBtn = document.getElementById('loadOlderBtn');
+    if (loadOlderBtn) {
+        loadOlderBtn.addEventListener('click', async () => {
+            // Find the oldest message currently displayed
+            // We need to skip the button itself if it's in the container
+            const allWrappers = messagesContainer.querySelectorAll('.message-wrapper');
+            const firstMsg = allWrappers[0];
+
+            if (!firstMsg) return;
+
+            const beforeId = firstMsg.dataset.id;
+            loadOlderBtn.classList.add('loading');
+            loadOlderBtn.disabled = true;
+            const originalText = loadOlderBtn.textContent;
+            loadOlderBtn.textContent = 'Loading...';
+
+            try {
+                const response = await fetch(`/messages/${conversationId}/poll?before=${beforeId}`, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': getCsrfToken()
+                    }
+                });
+
+                if (response.ok) {
+                    const messages = await response.json();
+                    if (Array.isArray(messages) && messages.length > 0) {
+                        const oldScrollHeight = messagesContainer.scrollHeight;
+                        const oldScrollTop = messagesContainer.scrollTop;
+
+                        // They are returned sorted ASC (Oldest...Newest of that batch)
+                        // To prepend correctly:
+                        // [Msg1, Msg2... Msg50]
+                        // We iterate Backwards: Msg50 prepended (Top), Msg49 prepended (Top)...
+                        // Result: Msg1...Msg50 at Top.
+
+                        for (let i = messages.length - 1; i >= 0; i--) {
+                            messages[i].sender_id = parseInt(messages[i].sender_id);
+                            appendMessage(messages[i], true);
+                        }
+
+                        // Adjust scroll
+                        const newScrollHeight = messagesContainer.scrollHeight;
+                        messagesContainer.scrollTop = newScrollHeight - oldScrollHeight + oldScrollTop;
+
+                        if (messages.length < 50) {
+                            loadOlderBtn.textContent = 'No more messages';
+                            loadOlderBtn.style.display = 'none';
+                        } else {
+                            loadOlderBtn.textContent = originalText;
+                        }
+
+                    } else {
+                        loadOlderBtn.textContent = 'No more messages';
+                        loadOlderBtn.style.display = 'none';
+                    }
+                }
+            } catch (err) {
+                console.error('Error loading older messages', err);
+                loadOlderBtn.textContent = originalText;
+            } finally {
+                loadOlderBtn.classList.remove('loading');
+                loadOlderBtn.disabled = false;
+            }
+        });
+    }
 
     // Cleanup on page unload (optional in MPA but good practice)
     window.addEventListener('beforeunload', () => {
