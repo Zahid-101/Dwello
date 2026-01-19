@@ -17,6 +17,7 @@ class RoommateProfile extends Model
         'budget_min',
         'budget_max',
         'preferred_city',
+        'preferred_property_type',
         'preferred_location',
         'move_in_date',
         'is_smoker',
@@ -66,23 +67,31 @@ class RoommateProfile extends Model
 
         switch ($attribute) {
             case 'noise_tolerance':
-                if ($value <= 2) return 'Quiet';
-                if ($value == 3) return 'Moderate';
+                if ($value <= 2)
+                    return 'Quiet';
+                if ($value == 3)
+                    return 'Moderate';
                 return 'Loud / OK with noise';
 
             case 'sleep_schedule':
-                if ($value <= 2) return 'Early sleeper';
-                if ($value == 3) return 'Flexible';
+                if ($value <= 2)
+                    return 'Early sleeper';
+                if ($value == 3)
+                    return 'Flexible';
                 return 'Night owl';
 
             case 'study_focus':
-                if ($value <= 2) return 'Relaxed';
-                if ($value == 3) return 'Moderate';
+                if ($value <= 2)
+                    return 'Relaxed';
+                if ($value == 3)
+                    return 'Moderate';
                 return 'Focused';
 
             case 'social_level':
-                if ($value <= 2) return 'Private';
-                if ($value == 3) return 'Balanced';
+                if ($value <= 2)
+                    return 'Private';
+                if ($value == 3)
+                    return 'Balanced';
                 return 'Social';
 
             default:
