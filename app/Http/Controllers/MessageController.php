@@ -73,7 +73,8 @@ class MessageController extends Controller
     {
         $this->authorizeParticipant($conversation);
 
-        $afterId = $request->input('after', 0);
+        $afterId = $request->input('after');
+        $beforeId = $request->input('before');
 
         $messages = $conversation->messages()
             ->where('id', '>', $afterId)

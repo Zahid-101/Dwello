@@ -425,6 +425,7 @@
 
         // Pass server data to JS
         window.serverProfiles = @json($profiles->items());
+        window.userProfile = @json($userProfile);
         window.userProfile = @json(auth()->user() ? auth()->user()->roommateProfile : null);
 
         // Debug

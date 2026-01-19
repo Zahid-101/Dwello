@@ -100,7 +100,20 @@
                             <button type="button" class="btn btn-primary"
                                 onclick="window.location.href='{{ route('login') }}'">
                                 Login
+                                <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
                             </button>
+                            <div id="loginDropdownMenu" style="display: none; position: absolute; right: 0; top: 100%; margin-top: 8px; width: 200px; background: white; border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); padding: 8px 0; z-index: 100; border: 1px solid var(--gray-200);">
+                                <a href="{{ route('login', ['role' => 'tenant']) }}" style="display: block; padding: 10px 16px; color: var(--gray-700); text-decoration: none; font-size: 14px; transition: background 0.2s;" onmouseover="this.style.background='var(--gray-50)'" onmouseout="this.style.background='transparent'">
+                                    Login as Tenant
+                                </a>
+                                <div style="height: 1px; background: var(--gray-100); margin: 4px 0;"></div>
+                                <a href="{{ route('login', ['role' => 'landlord']) }}" style="display: block; padding: 10px 16px; color: var(--gray-700); text-decoration: none; font-size: 14px; transition: background 0.2s;" onmouseover="this.style.background='var(--gray-50)'" onmouseout="this.style.background='transparent'">
+                                    Login as Landlord
+                                </a>
+                            </div>
+                        </div>
                         @else
                             @auth
                                 <a href="{{ auth()->user()->isLandlord() ? route('profile.edit') : route('roommate-profiles.create') }}"

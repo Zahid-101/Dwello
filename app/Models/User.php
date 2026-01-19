@@ -88,4 +88,10 @@ class User extends Authenticatable
         // Logic: if email matches config OR role is 'admin' (if we had that role)
         return $this->email === config('app.admin_email', 'admin@dwello.com');
     }
+
+    public function rejectedUsers()
+    {
+        return $this->belongsToMany(User::class, 'rejected_matches', 'user_id', 'rejected_user_id')
+            ->withTimestamps();
+    }
 }
