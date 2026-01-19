@@ -8,6 +8,7 @@ class CompatibilityService
 {
     /**
      * Calculate compatibility between two profiles.
+     * 
      *
      * @param RoommateProfile $viewer
      * @param RoommateProfile $target
