@@ -19,6 +19,29 @@ class MessageController extends Controller
             'body' => 'required|string|max:2000',
         ]);
 
+        if ($conversation->status === 'rejected') {
+            abort(403, 'This conversation has been rejected.');
+        }
+
+        if ($conversation->status === 'pending') {
+            // If sender IS the starter
+            if ($conversation->started_by && auth()->id() == $conversation->started_by) {
+                // Allow only if message count is 0 (just starting)
+                // BUT wait... 'store' creates a message.
+                // If the convo already has messages (count > 0), they can't send another.
+                if ($conversation->messages()->count() > 0) {
+                    // Check if last message was mine? No, simplest rule: 1 message until accepted.
+                    // Actually, if I just started it, count might be 0.
+                    // If I sent one, count is 1. I can't send sending.
+                    return response()->json(['error' => 'Wait for the user to accept your request.'], 403);
+                }
+            } else {
+                // Sender is NOT the starter (The Recipient)
+                // Implicitly accept the conversation
+                $conversation->update(['status' => 'accepted']);
+            }
+        }
+
         $message = $conversation->messages()->create([
             'sender_id' => auth()->id(),
             'body' => $request->body,
@@ -32,7 +55,14 @@ class MessageController extends Controller
             'body' => $message->body,
             'sender_id' => $message->sender_id,
             'created_at' => $message->created_at->toDateTimeString(),
-            'sender_name' => auth()->user()->name, 
+            'sender_name' => auth()->user()->name,
+            'property_id' => $message->property_id,
+            'property' => $message->property ? [
+                'id' => $message->property->id,
+                'title' => $message->property->title,
+                'monthly_rent' => $message->property->monthly_rent,
+                'photo_url' => $message->property->photos->first() ? \Illuminate\Support\Facades\Storage::url($message->property->photos->first()->path) : null,
+            ] : null,
         ]);
     }
 
@@ -46,40 +76,12 @@ class MessageController extends Controller
         $afterId = $request->input('after');
         $beforeId = $request->input('before');
 
-        $query = $conversation->messages()
-            ->with('sender');
-
-        if ($afterId) {
-            // Poll for new messages (Standard)
-            // Get messages newer than X, oldest first (so they append naturally)
-            $messages = $query->where('id', '>', $afterId)
-                ->orderBy('created_at', 'asc')
-                ->limit(50)
-                ->get();
-        } elseif ($beforeId) {
-            // Load history
-            // Get messages older than Y.
-            // We want the closest ones to Y. So Order by Created DESC, limit 50.
-            // Then reverse them to return in chronological order for the JS to handle?
-            // Or just return them. 
-            // JS iterates backwards to prepend. 
-            // If we return [Oldest, ..., Newest-Before-Y]
-            // JS loop: Prepend Newest-Before-Y (Top), Prepend ... (Top), Prepend Oldest (Top).
-            // Result: [Oldest, ..., Newest-Before-Y] at top. Correct.
-            
-            // So we need [Msg 1... Msg 50] sorted ASC.
-            // But to get the *previous* 50, we need to order by DESC to find them, then sort back ASC.
-            
-            $messages = $query->where('id', '<', $beforeId)
-                ->orderBy('created_at', 'desc')
-                ->limit(50)
-                ->get()
-                ->sortBy('created_at')
-                ->values();
-        } else {
-            // Fallback (shouldn't really hit this via poll, but maybe initial load?)
-            $messages = collect([]); 
-        }
+        $messages = $conversation->messages()
+            ->where('id', '>', $afterId)
+            ->with(['sender', 'property.photos'])
+            ->orderBy('created_at', 'asc')
+            ->limit(50)
+            ->get();
 
         $data = $messages->map(function ($msg) {
             return [
@@ -87,7 +89,14 @@ class MessageController extends Controller
                 'body' => $msg->body,
                 'sender_id' => $msg->sender_id,
                 'created_at' => $msg->created_at->toDateTimeString(),
-                'sender_name' => $msg->sender ? $msg->sender->name : 'Unknown',
+                'sender_name' => $msg->sender->name,
+                'property_id' => $msg->property_id,
+                'property' => $msg->property ? [
+                    'id' => $msg->property->id,
+                    'title' => $msg->property->title,
+                    'monthly_rent' => $msg->property->monthly_rent,
+                    'photo_url' => $msg->property->photos->first() ? \Illuminate\Support\Facades\Storage::url($msg->property->photos->first()->path) : null,
+                ] : null,
             ];
         });
 

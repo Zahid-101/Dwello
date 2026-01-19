@@ -19,13 +19,20 @@ class ConversationController extends Controller
         $userId = auth()->id();
 
         $conversations = Conversation::forUser($userId)
-            ->with(['property', 'userOne', 'userTwo', 'messages' => function ($query) {
-                $query->latest()->limit(1);
-            }])
-            ->withCount(['messages as unread_count' => function ($query) use ($userId) {
-                $query->where('sender_id', '!=', $userId)
-                      ->whereNull('read_at');
-            }])
+            ->with([
+                'property',
+                'userOne',
+                'userTwo',
+                'messages' => function ($query) {
+                    $query->latest()->limit(1);
+                }
+            ])
+            ->withCount([
+                'messages as unread_count' => function ($query) use ($userId) {
+                    $query->where('sender_id', '!=', $userId)
+                        ->whereNull('read_at');
+                }
+            ])
             ->orderBy('last_message_at', 'desc')
             ->orderBy('updated_at', 'desc')
             ->get();
@@ -47,9 +54,9 @@ class ConversationController extends Controller
             ->with('sender')
             ->orderBy('created_at', 'asc') // Oldest first for chat history
             ->get(); // In a real app we might paginate, but requirement says "load last 50" or similar. Limit if needed.
-                     // The prompt suggested load last 50 oldest->newest. 
-                     // Let's do a tailored query:
-        
+        // The prompt suggested load last 50 oldest->newest. 
+        // Let's do a tailored query:
+
 
         // Mark unread messages as read
         $conversation->messages()
@@ -91,6 +98,8 @@ class ConversationController extends Controller
             ],
             [
                 'last_message_at' => now(),
+                'status' => 'pending',
+                'started_by' => $authUserId,
             ]
         );
 
@@ -121,6 +130,8 @@ class ConversationController extends Controller
             ],
             [
                 'last_message_at' => now(),
+                'status' => 'pending',
+                'started_by' => $authUserId,
             ]
         );
 
@@ -136,5 +147,62 @@ class ConversationController extends Controller
         if ($conversation->user_one_id !== $userId && $conversation->user_two_id !== $userId) {
             abort(403, 'Unauthorized action.');
         }
+    }
+    /**
+     * Accept a message request.
+     */
+    public function accept(Conversation $conversation)
+    {
+        $this->authorizeParticipant($conversation);
+
+        if ($conversation->status !== 'pending') {
+            return redirect()->back(); // Already handled
+        }
+
+        // Only the recipient (NOT the starter) can accept explicit requests
+        // But implicit acceptance handled in MessageController. This is for the UI button.
+        if ($conversation->started_by && auth()->id() == $conversation->started_by) {
+            return redirect()->back()->with('error', 'You cannot accept your own request.');
+        }
+
+        $conversation->update(['status' => 'accepted']);
+
+        return redirect()->route('messages.show', $conversation)->with('success', 'Request accepted.');
+    }
+
+    /**
+     * Reject or Block a conversation.
+     */
+    public function reject(Conversation $conversation)
+    {
+        $this->authorizeParticipant($conversation);
+
+        // Update status to rejected and set who blocked it
+        $conversation->update([
+            'status' => 'rejected',
+            'blocked_by' => auth()->id(),
+        ]);
+
+        return redirect()->route('messages.index')->with('success', 'User blocked.');
+    }
+
+    /**
+     * Unblock a conversation.
+     */
+    public function unblock(Conversation $conversation)
+    {
+        $this->authorizeParticipant($conversation);
+
+        // Only the blocker can unblock
+        if ($conversation->blocked_by != auth()->id()) {
+            abort(403, 'You cannot unblock this user.');
+        }
+
+        $conversation->update([
+            'status' => 'accepted',
+            'blocked_by' => null,
+        ]);
+
+        return redirect()->back()->with('success', 'User unblocked.');
     }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\RoommateProfile;
 use App\Models\User;
+use Illuminate\Support\Facades\Storage;
 use App\Services\CompatibilityService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -55,7 +56,7 @@ class RoommateProfileController extends Controller
 
         // Calculate compatibility & Filter
         $viewerProfile = auth()->user()->roommateProfile ?? null;
-        
+
         $profilesCollection = $profilesCollection->map(function ($profile) use ($viewerProfile) {
             // Skip self score
             if (auth()->id() === $profile->user_id) {
@@ -70,7 +71,8 @@ class RoommateProfileController extends Controller
             } else {
                 // Heuristic for guests
                 $base = 70;
-                if ($profile->preferred_city) $base += 5;
+                if ($profile->preferred_city)
+                    $base += 5;
                 $profile->compatibility_score = $base; // Simplified
             }
             return $profile;
@@ -85,7 +87,7 @@ class RoommateProfileController extends Controller
                 return $profile->compatibility_score >= $minScore;
             });
         }
-        
+
         // Remove self from matches list generally?
         if (auth()->check()) {
             $userId = auth()->id();
@@ -126,7 +128,7 @@ class RoommateProfileController extends Controller
         $page = \Illuminate\Pagination\Paginator::resolveCurrentPage() ?: 1;
         $perPage = 9;
         $items = $profilesCollection->values()->forPage($page, $perPage);
-        
+
         $profiles = new \Illuminate\Pagination\LengthAwarePaginator(
             $items,
             $profilesCollection->count(),
@@ -135,7 +137,48 @@ class RoommateProfileController extends Controller
             ['path' => \Illuminate\Pagination\Paginator::resolveCurrentPath(), 'query' => $request->query()]
         );
 
-        return view('roommates.index', ['profiles' => $profiles, 'userProfile' => $viewerProfile]);
+        // Fetch matching properties for the "Comparisons/Matches" tab
+        $matchingPropertiesParams = collect(); // Default empty
+
+        if (auth()->check() && auth()->user()->roommateProfile) {
+            $myProfile = auth()->user()->roommateProfile;
+
+            $propQuery = \App\Models\Property::with('photos');
+
+            // Filter by City
+            if ($myProfile->preferred_city) {
+                $propQuery->where('city', $myProfile->preferred_city);
+            }
+
+            // Filter by Budget (Property rent <= User max budget)
+            if ($myProfile->budget_max) {
+                $propQuery->where('monthly_rent', '<=', $myProfile->budget_max);
+            }
+
+            // Filter by Property Type if set
+            if ($myProfile->preferred_property_type) {
+                $propQuery->where('property_type', $myProfile->preferred_property_type);
+            }
+
+            $matchingPropertiesParams = $propQuery->inRandomOrder()->limit(6)->get();
+
+            // Fallback: if strict match yields few results, relax constraints
+            if ($matchingPropertiesParams->count() < 3) {
+                $ids = $matchingPropertiesParams->pluck('id');
+                $relaxedQuery = \App\Models\Property::with('photos')->whereNotIn('id', $ids);
+                // Relaxed: Match city OR budget
+                $relaxedQuery->where(function ($q) use ($myProfile) {
+                    if ($myProfile->preferred_city)
+                        $q->where('city', $myProfile->preferred_city);
+                    if ($myProfile->budget_max)
+                        $q->orWhere('monthly_rent', '<=', $myProfile->budget_max);
+                });
+                $more = $relaxedQuery->inRandomOrder()->limit(6 - $matchingPropertiesParams->count())->get();
+                $matchingPropertiesParams = $matchingPropertiesParams->merge($more);
+            }
+        }
+
+        return view('roommates.index', compact('profiles', 'matchingPropertiesParams'));
     }
 
     // Show form to create / update current user's profile
@@ -151,40 +194,60 @@ class RoommateProfileController extends Controller
     {
         // Sanitize boolean fields before validation
         $booleans = [
-            'is_smoker', 'has_pets', 
-            'pref_no_smoker', 'pref_pets_ok', 'pref_same_gender_only', 
-            'pref_visitors_ok', 'pref_substance_free_required', 'uses_substances'
+            'is_smoker',
+            'has_pets',
+            'pref_no_smoker',
+            'pref_pets_ok',
+            'pref_same_gender_only',
+            'pref_visitors_ok',
+            'pref_substance_free_required',
+            'uses_substances'
         ];
 
         foreach ($booleans as $field) {
             $request->merge([$field => $request->boolean($field) ? 1 : 0]);
         }
 
+        $request->validate([
+            'profile_photo' => 'nullable|image|max:1024',
+        ]);
+
+        $user = auth()->user();
+        if ($request->hasFile('profile_photo')) {
+            if ($user->profile_photo_path) {
+                Storage::disk('public')->delete($user->profile_photo_path);
+            }
+            $path = $request->file('profile_photo')->store('profile-photos', 'public');
+            $user->profile_photo_path = $path;
+            $user->save();
+        }
+
         $data = $request->validate([
-            'display_name'        => 'required|string|max:50',
-            'age'                 => 'nullable|integer|min:16|max:100',
-            'gender'              => 'nullable|in:male,female,other',
-            'budget_min'          => 'nullable|numeric|min:0|max:10000000',
-            'budget_max'          => 'nullable|numeric|min:0|max:10000000|gte:budget_min', // Max >= Min
-            'preferred_city'      => ['nullable', 'string', 'max:50', Rule::in(config('cities'))],
-            'preferred_location'  => 'nullable|string|max:255',
-            'move_in_date'        => 'nullable|date|after_or_equal:today',
-            'is_smoker'           => 'nullable|boolean',
-            'has_pets'            => 'nullable|boolean',
-            'bio'                 => 'nullable|string|max:1000',
+            'display_name' => 'required|string|max:50',
+            'age' => 'nullable|integer|min:16|max:100',
+            'gender' => 'nullable|in:male,female,other',
+            'budget_min' => 'nullable|numeric|min:0|max:10000000',
+            'budget_max' => 'nullable|numeric|min:0|max:10000000|gte:budget_min', // Max >= Min
+            'preferred_city' => ['nullable', 'string', 'max:50', Rule::in(config('cities'))],
+            'preferred_property_type' => 'nullable|in:room,apartment,house',
+            'preferred_location' => 'nullable|string|max:255',
+            'move_in_date' => 'nullable|date|after_or_equal:today',
+            'is_smoker' => 'nullable|boolean',
+            'has_pets' => 'nullable|boolean',
+            'bio' => 'nullable|string|max:1000',
             // New compatibility fields
-            'pref_no_smoker'               => 'boolean',
-            'pref_pets_ok'                 => 'boolean',
-            'pref_same_gender_only'        => 'boolean',
-            'pref_visitors_ok'             => 'boolean',
+            'pref_no_smoker' => 'boolean',
+            'pref_pets_ok' => 'boolean',
+            'pref_same_gender_only' => 'boolean',
+            'pref_visitors_ok' => 'boolean',
             'pref_substance_free_required' => 'boolean',
-            'uses_substances'              => 'boolean',
-            'noise_tolerance'              => 'nullable|integer|min:1|max:5',
-            'sleep_schedule'               => 'nullable|integer|min:1|max:5',
-            'study_focus'                  => 'nullable|integer|min:1|max:5',
-            'social_level'                 => 'nullable|integer|min:1|max:5',
-            'schedule_type'                => 'nullable|in:morning,night,mixed',
-            'occupation_field'             => 'nullable|string|max:50',
+            'uses_substances' => 'boolean',
+            'noise_tolerance' => 'nullable|integer|min:1|max:5',
+            'sleep_schedule' => 'nullable|integer|min:1|max:5',
+            'study_focus' => 'nullable|integer|min:1|max:5',
+            'social_level' => 'nullable|integer|min:1|max:5',
+            'schedule_type' => 'nullable|in:morning,night,mixed',
+            'occupation_field' => 'nullable|string|max:50',
         ], [
             'budget_max.gte' => 'Maximum budget must be greater than or equal to minimum budget.',
             'move_in_date.after_or_equal' => 'Move-in date cannot be in the past.',
@@ -208,17 +271,75 @@ class RoommateProfileController extends Controller
     public function show(RoommateProfile $roommateProfile)
     {
         $roommateProfile->load('user');
-        
-        // Calculate compatibility if user is logged in and not viewing themselves
+
         $compatibility = null;
+        $matchingProperties = collect();
+
         if (auth()->check() && auth()->user()->roommateProfile && auth()->id() !== $roommateProfile->user_id) {
+            $viewerProfile = auth()->user()->roommateProfile;
+
+            // Calculate Compatibility
             $compatibility = $this->compatibilityService->calculate(
-                auth()->user()->roommateProfile, 
+                $viewerProfile,
                 $roommateProfile
             );
+
+            // Cascading Logic to GUARANTEE results if properties exist
+            $city = $roommateProfile->preferred_city ?? $viewerProfile->preferred_city;
+            $type = $roommateProfile->preferred_property_type ?? $viewerProfile->preferred_property_type;
+            $combinedBudget = ($viewerProfile->budget_max ?? 0) + ($roommateProfile->budget_max ?? 0);
+
+            // 1. Strict Match: City + Type + Budget
+            $query = \App\Models\Property::with('photos');
+            if ($city)
+                $query->where('city', $city);
+            if ($type)
+                $query->where('property_type', $type);
+            if ($combinedBudget > 0)
+                $query->where('monthly_rent', '<=', $combinedBudget);
+
+            $matchingProperties = $query->inRandomOrder()->limit(3)->get();
+
+            // 2. Relaxed Match: City + Budget (Ignore Type)
+            if ($matchingProperties->count() < 3) {
+                $needed = 3 - $matchingProperties->count();
+                $ids = $matchingProperties->pluck('id');
+
+                $query = \App\Models\Property::with('photos')->whereNotIn('id', $ids);
+                if ($city)
+                    $query->where('city', $city);
+                if ($combinedBudget > 0)
+                    $query->where('monthly_rent', '<=', $combinedBudget);
+
+                $more = $query->inRandomOrder()->limit($needed)->get();
+                $matchingProperties = $matchingProperties->merge($more);
+            }
+
+            // 3. Relaxed Match: City only (Ignore Budget)
+            if ($matchingProperties->count() < 3) {
+                $needed = 3 - $matchingProperties->count();
+                $ids = $matchingProperties->pluck('id');
+
+                $query = \App\Models\Property::with('photos')->whereNotIn('id', $ids);
+                if ($city)
+                    $query->where('city', $city);
+
+                $more = $query->inRandomOrder()->limit($needed)->get();
+                $matchingProperties = $matchingProperties->merge($more);
+            }
+
+            // 4. Default: Any Property (Ignore City, show anything)
+            if ($matchingProperties->count() < 3) {
+                $needed = 3 - $matchingProperties->count();
+                $ids = $matchingProperties->pluck('id');
+
+                $query = \App\Models\Property::with('photos')->whereNotIn('id', $ids);
+                $more = $query->inRandomOrder()->limit($needed)->get();
+                $matchingProperties = $matchingProperties->merge($more);
+            }
         }
 
-        return view('roommates.show', compact('roommateProfile', 'compatibility'));
+        return view('roommates.show', compact('roommateProfile', 'compatibility', 'matchingProperties'));
     }
 
     // API endpoint for compatibility (if needed for dynamic updates, though we passed it in show)

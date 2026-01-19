@@ -14,6 +14,7 @@ class Message extends Model
         'sender_id',
         'body',
         'read_at',
+        'property_id',
     ];
 
     protected $casts = [
@@ -28,5 +29,10 @@ class Message extends Model
     public function sender()
     {
         return $this->belongsTo(User::class, 'sender_id');
+    }
+
+    public function property()
+    {
+        return $this->belongsTo(Property::class);
     }
 }
