@@ -7,6 +7,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ConversationController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\FavoriteController;
+use App\Http\Controllers\UserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,6 +25,9 @@ Route::get('/properties', [PropertyController::class, 'index'])
 
 Route::get('/roommates', [RoommateProfileController::class, 'index'])
     ->name('roommates.index');
+
+Route::get('/users/{user}', [UserController::class, 'show'])
+    ->name('users.show');
 
 
 
@@ -69,7 +73,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/roommates/{user}/compatibility', [RoommateProfileController::class, 'compatibility'])
         ->name('roommates.compatibility');
-    
+
     Route::post('/roommates/{user}/reject', [RoommateProfileController::class, 'reject'])
         ->name('roommates.reject');
 

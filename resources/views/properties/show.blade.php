@@ -158,6 +158,9 @@
                     <div>
                         <div class="font-semibold text-gray-900">{{ $property->user->name ?? 'Landlord' }}</div>
                         <div class="text-sm text-gray-500">Property Owner</div>
+                        <a href="{{ route('users.show', $property->user) }}" class="text-sm font-medium text-dwello-primary hover:underline" style="color: var(--dwello-primary);">
+                            View Profile
+                        </a>
                     </div>
                 </div>
 
