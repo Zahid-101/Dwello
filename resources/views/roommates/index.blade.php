@@ -110,7 +110,48 @@
 
                 {{-- Profile Cards Grid --}}
                 <div class="roommate-index-grid"
-                    style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 32px;">
+                    style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 32px; position: relative;">
+                    
+                    @guest
+                        {{-- Locked State Overlay for Guests --}}
+                        <div style="grid-column: 1 / -1; min-height: 400px; background: white; border-radius: 20px; border: 1px solid var(--gray-200); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+                            
+                            <div style="width: 80px; height: 80px; background: var(--gray-100); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 24px;">
+                                <svg style="width: 40px; height: 40px; color: var(--gray-500);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                </svg>
+                            </div>
+                            
+                            <h3 style="font-size: 24px; font-weight: bold; color: var(--gray-900); margin-bottom: 12px; font-family: 'Poppins', sans-serif;">
+                                Unlock Compatiable Roommates
+                            </h3>
+                            <p style="color: var(--gray-600); max-width: 400px; margin-bottom: 32px; font-size: 16px;">
+                                Log in to see your compatibility scores and find the perfect flatmate who matches your lifestyle and preferences.
+                            </p>
+                            
+                            <div style="display: flex; gap: 16px;">
+                                <div class="relative">
+                                    <a href="{{ route('login') }}" class="btn btn-primary" style="padding: 12px 32px; font-size: 16px; text-decoration: none; display: inline-block;">
+                                        Log in to View Matches
+                                    </a>
+                                </div>
+                                <a href="{{ route('register') }}" class="btn btn-outline" style="padding: 12px 32px; font-size: 16px;">
+                                    Sign Up Free
+                                </a>
+                            </div>
+
+                            {{-- Faux Blurred Background Effect (Optional visual fluff) --}}
+                            <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: -1; overflow: hidden; opacity: 0.05; pointer-events: none;">
+                                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;">
+                                    @for($i = 0; $i < 6; $i++)
+                                        <div style="height: 300px; background: black; border-radius: 16px;"></div>
+                                    @endfor
+                                </div>
+                            </div>
+                        </div>
+                    @endguest
+
+                    @auth
                     @forelse ($profiles as $profile)
                         @php
                             // Use calculated score if available (from Controller), otherwise fallback to heuristic or default
@@ -280,14 +321,18 @@
                             </a>
                         </div>
                     @endforelse
+                    @endauth
                 </div>
 
                 {{-- Load More --}}
-                @if($profiles->hasPages())
-                    <div class="text-center" style="margin-top: 32px;">
-                        {{ $profiles->links() }}
-                    </div>
-                @endif
+                {{-- Load More --}}
+                @auth
+                    @if($profiles->hasPages())
+                        <div class="text-center" style="margin-top: 32px;">
+                            {{ $profiles->links() }}
+                        </div>
+                    @endif
+                @endauth
             </div>
 
             {{-- Compare Profiles Tab Content --}}
@@ -425,7 +470,7 @@
 
         // Pass server data to JS
         window.serverProfiles = @json($profiles->items());
-        window.userProfile = @json($userProfile);
+
         window.userProfile = @json(auth()->user() ? auth()->user()->roommateProfile : null);
 
         // Debug
