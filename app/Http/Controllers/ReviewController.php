@@ -26,26 +26,8 @@ class ReviewController extends Controller
             return back()->with('error', 'You cannot review your own property.');
         }
 
-        // 2. Verify conversation existence (Optional but requested)
-        // Check if there is a conversation of type 'property' involving this property and this user
-        $hasConversation = Conversation::where('property_id', $property->id)
-            ->where(function ($q) use ($user) {
-                $q->where('user_one_id', $user->id)
-                  ->orWhere('user_two_id', $user->id);
-            })
-            ->exists();
-
-        // If strict verification is needed, uncomment:
-        // if (!$hasConversation) {
-        //    return back()->with('error', 'You must contact the landlord before reviewing.');
-        // }
-        
-        // Since the prompt requested "Optional but recommended" and "Users can review only if...", 
-        // I will enforce it but allow a bypass if needed, or stick to the UI hiding the form.
-        // For security, enforcing it is better.
-        if (!$hasConversation) {
-             return back()->with('error', 'You need to message the landlord about this property before leaving a review.');
-        }
+        // 2. Verify conversation existence (Optional check removed to allow direct reviews)
+        // Check removed as per user request to allow tenants to comment directly
 
         // 3. Create or Update Review (Upsert logic)
         // If a review exists, we update it and reset status to pending

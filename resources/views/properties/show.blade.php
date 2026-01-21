@@ -386,49 +386,34 @@
             <div>
                 @auth
                     @if(auth()->id() !== $property->user_id)
-                        <?php
-                            // Check conversation existence (simplified check in view for UI toggle, logic enforced in controller)
-                            $hasConvo = \App\Models\Conversation::where('property_id', $property->id)
-                                ->where(function($q) {
-                                    $q->where('user_one_id', auth()->id())
-                                      ->orWhere('user_two_id', auth()->id());
-                                })->exists();
-                        ?>
-
-                        @if($hasConvo)
-                            <div style="background: white; border: 1px solid var(--gray-200); padding: 24px; border-radius: 16px;">
-                                <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 16px;">Write a Review</h3>
-                                <form action="{{ route('reviews.store', $property) }}" method="POST">
-                                    @csrf
-                                    <div style="margin-bottom: 16px;">
-                                        <label style="display: block; margin-bottom: 8px; font-weight: 500;">Rating</label>
-                                        <div class="star-rating">
-                                            @for($i = 5; $i >= 1; $i--)
-                                                <input type="radio" id="star{{$i}}" name="rating" value="{{ $i }}" {{ old('rating') == $i ? 'checked' : '' }} required>
-                                                <label for="star{{$i}}" title="{{ $i }} stars">★</label>
-                                            @endfor
-                                        </div>
-                                        @error('rating')
-                                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                                        @enderror
+                        <div style="background: white; border: 1px solid var(--gray-200); padding: 24px; border-radius: 16px;">
+                            <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 16px;">Write a Review</h3>
+                            <form action="{{ route('reviews.store', $property) }}" method="POST">
+                                @csrf
+                                <div style="margin-bottom: 16px;">
+                                    <label style="display: block; margin-bottom: 8px; font-weight: 500;">Rating</label>
+                                    <div class="star-rating">
+                                        @for($i = 5; $i >= 1; $i--)
+                                            <input type="radio" id="star{{$i}}" name="rating" value="{{ $i }}" {{ old('rating') == $i ? 'checked' : '' }} required>
+                                            <label for="star{{$i}}" title="{{ $i }} stars">★</label>
+                                        @endfor
                                     </div>
+                                    @error('rating')
+                                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
 
-                                    <div style="margin-bottom: 16px;">
-                                        <label style="display: block; margin-bottom: 8px; font-weight: 500;">Comment</label>
-                                        <textarea name="comment" rows="4" class="@error('comment') border-red-500 @enderror" style="width: 100%; border: 1px solid var(--gray-300); border-radius: 8px; padding: 12px;">{{ old('comment') }}</textarea>
-                                        @error('comment')
-                                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                                        @enderror
-                                    </div>
+                                <div style="margin-bottom: 16px;">
+                                    <label style="display: block; margin-bottom: 8px; font-weight: 500;">Comment</label>
+                                    <textarea name="comment" rows="4" class="@error('comment') border-red-500 @enderror" style="width: 100%; border: 1px solid var(--gray-300); border-radius: 8px; padding: 12px;">{{ old('comment') }}</textarea>
+                                    @error('comment')
+                                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
 
-                                    <button type="submit" class="btn btn-primary" style="width: 100%;">Submit Review</button>
-                                </form>
-                            </div>
-                        @else
-                            <div style="background: var(--gray-50); padding: 24px; border-radius: 16px; text-align: center; color: var(--gray-600);">
-                                <p>You verify this property by contacting the landlord before you can leave a review.</p>
-                            </div>
-                        @endif
+                                <button type="submit" class="btn btn-primary" style="width: 100%;">Submit Review</button>
+                            </form>
+                        </div>
                     @else
                         <div style="background: var(--gray-50); padding: 24px; border-radius: 16px; text-align: center; color: var(--gray-600);">
                             <p>You cannot review your own property.</p>
