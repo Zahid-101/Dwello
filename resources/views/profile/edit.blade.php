@@ -48,13 +48,13 @@
 
                         <div class="flex-1">
                             <input type="file" name="profile_photo" id="profile_photo" accept="image/*" class="block w-full text-sm text-slate-500
-                              file:mr-4 file:py-2 file:px-4
-                              file:rounded-full file:border-0
-                              file:text-sm file:font-semibold
-                              file:bg-orange-50 file:text-orange-700
-                              hover:file:bg-orange-100
-                              cursor-pointer
-                            " onchange="previewImage(this)" />
+                                  file:mr-4 file:py-2 file:px-4
+                                  file:rounded-full file:border-0
+                                  file:text-sm file:font-semibold
+                                  file:bg-orange-50 file:text-orange-700
+                                  hover:file:bg-orange-100
+                                  cursor-pointer
+                                " onchange="previewImage(this)" />
                             <p class="text-xs text-gray-500 mt-2">Recommended: Square JPG, PNG. Max 1MB.</p>
                             @error('profile_photo')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -81,7 +81,7 @@
                             Number</label>
                         <input class="input @error('phone_number') border-red-500 @enderror"
                             style="width:100%; border-radius:12px;" id="phone_number" name="phone_number" type="text"
-                            value="{{ old('phone_number', $user->phone_number) }}" autocomplete="tel">
+                            value="{{ old('phone_number', $user->phone_number) }}" autocomplete="tel" maxlength="10" pattern="\d*">
                         @error('phone_number')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror

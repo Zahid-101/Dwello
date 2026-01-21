@@ -56,15 +56,14 @@
                     @endauth
 
                     <div class="w-full border-t border-gray-100 pt-6 mt-2 text-left">
-                        <h3 class="font-semibold text-gray-900 mb-3">Verified Info</h3>
+                        <h3 class="font-semibold text-gray-900 mb-3">Contact Info</h3>
                         <ul class="space-y-3 text-sm text-gray-600">
                              <li class="flex items-center gap-2">
-                                <span class="text-green-500">✔</span> Email Address
+                                <span class="text-green-500">✔</span> {{ $user->email }}
                             </li>
-                            {{-- Add phone valid check if needed --}}
                             @if($user->phone_number)
                                 <li class="flex items-center gap-2">
-                                    <span class="text-green-500">✔</span> Phone Number
+                                    <span class="text-green-500">✔</span> {{ $user->phone_number }}
                                 </li>
                             @endif
                         </ul>
