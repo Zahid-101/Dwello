@@ -60,6 +60,15 @@ class PropertyController extends Controller
     }
 
     /**
+     * Show create form (already done earlier).
+     */
+    public function myListings()
+    {
+        $properties = auth()->user()->properties()->with('photos')->latest()->get();
+        return view('properties.my-listings', compact('properties'));
+    }
+
+    /**
      * Show property details.
      */
     public function show(Property $property)
@@ -75,19 +84,19 @@ class PropertyController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'title'         => 'required|string|max:100',
-            'description'   => 'nullable|string|max:2000',
-            'city'          => ['required', 'string', 'max:50', Rule::in(config('cities'))],
-            'address'       => 'required|string|max:255',
-            'monthly_rent'  => 'required|numeric|min:0|max:10000000', // Cap at 10 million for safety
-            'bedrooms'      => 'required|integer|min:1|max:20',
-            'bathrooms'     => 'required|integer|min:1|max:20',
+            'title' => 'required|string|max:100',
+            'description' => 'nullable|string|max:2000',
+            'city' => ['required', 'string', 'max:50', Rule::in(config('cities'))],
+            'address' => 'required|string|max:255',
+            'monthly_rent' => 'required|numeric|min:0|max:10000000', // Cap at 10 million for safety
+            'bedrooms' => 'required|integer|min:1|max:20',
+            'bathrooms' => 'required|integer|min:1|max:20',
             'property_type' => 'required|in:room,apartment,house',
-            'available_from'=> 'nullable|date|after_or_equal:today',
-            'latitude'      => 'nullable|numeric|between:-90,90',
-            'longitude'     => 'nullable|numeric|between:-180,180',
-            'photos'        => 'nullable|array',
-            'photos.*'      => 'image|mimes:jpeg,png,jpg,webp|max:2048', // 2MB max per image
+            'available_from' => 'nullable|date|after_or_equal:today',
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
+            'photos' => 'nullable|array',
+            'photos.*' => 'image|mimes:jpeg,png,jpg,webp|max:2048', // 2MB max per image
         ]);
 
         $validated['user_id'] = auth()->id();
@@ -127,22 +136,22 @@ class PropertyController extends Controller
         }
 
         $validated = $request->validate([
-            'title'         => 'required|string|max:100',
-            'description'   => 'nullable|string|max:2000',
-            'city'          => ['required', 'string', 'max:50', Rule::in(config('cities'))],
-            'address'       => 'required|string|max:255',
-            'monthly_rent'  => 'required|numeric|min:0|max:10000000',
-            'bedrooms'      => 'required|integer|min:1|max:20',
-            'bathrooms'     => 'required|integer|min:1|max:20',
+            'title' => 'required|string|max:100',
+            'description' => 'nullable|string|max:2000',
+            'city' => ['required', 'string', 'max:50', Rule::in(config('cities'))],
+            'address' => 'required|string|max:255',
+            'monthly_rent' => 'required|numeric|min:0|max:10000000',
+            'bedrooms' => 'required|integer|min:1|max:20',
+            'bathrooms' => 'required|integer|min:1|max:20',
             'property_type' => 'required|in:room,apartment,house',
-            'available_from'=> 'nullable|date|after_or_equal:today',
+            'available_from' => 'nullable|date|after_or_equal:today',
             // 'latitude' & 'longitude' usually shouldn't change easily or require map re-picker, ignoring for MVU or keeping if needed. 
             // Let's allow them if invalid/missing, or just keep basic fields for now to avoid complexity with map logic in edit.
             // Actually, let's include them as nullable just in case.
-            'latitude'      => 'nullable|numeric|between:-90,90',
-            'longitude'     => 'nullable|numeric|between:-180,180',
-            'photos'        => 'nullable|array',
-            'photos.*'      => 'image|mimes:jpeg,png,jpg,webp|max:2048',
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
+            'photos' => 'nullable|array',
+            'photos.*' => 'image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
 
         $property->update($validated);
@@ -170,7 +179,64 @@ class PropertyController extends Controller
         // Ideally delete photos from storage too, but basic DB delete handles model
         $property->delete();
 
-        return redirect()->route('properties.index')
-            ->with('success', 'Property deleted successfully.');
+        return back()->with('success', 'Property deleted successfully.');
+    }
+    /**
+     * Share property with another user.
+     */
+    public function share(Request $request, Property $property)
+    {
+        $validated = $request->validate([
+            'recipient_id' => 'required|exists:users,id',
+        ]);
+
+        $recipientId = $validated['recipient_id'];
+        $authUserId = auth()->id();
+
+        if ($recipientId == $authUserId) {
+            return response()->json(['success' => false, 'message' => 'You cannot share with yourself.']);
+        }
+
+        // Find or create conversation
+        // Logic similar to ConversationController::startProperty but simplified for generic sharing
+        // We check for existing conversation regardless of type, or create a 'property' type if none exists.
+        // Actually, let's keep it simple: Find ANY conversation between these two. If none, create new one.
+
+        $conversation = \App\Models\Conversation::where(function ($q) use ($authUserId, $recipientId) {
+            $q->where('user_one_id', $authUserId)->where('user_two_id', $recipientId);
+        })->orWhere(function ($q) use ($authUserId, $recipientId) {
+            $q->where('user_one_id', $recipientId)->where('user_two_id', $authUserId);
+        })->first();
+
+        if (!$conversation) {
+            $conversation = \App\Models\Conversation::create([
+                'type' => 'property', // Defaulting to property type context, though it could be just a chat
+                'property_id' => $property->id,
+                'user_one_id' => $authUserId,
+                'user_two_id' => $recipientId,
+                'last_message_at' => now(),
+                'status' => 'pending', // New convos are pending
+                'started_by' => $authUserId,
+            ]);
+        } else {
+            // Update last message time
+            $conversation->touch('last_message_at');
+        }
+
+        // Check if blocked
+        if ($conversation->status === 'rejected') {
+            return response()->json(['success' => false, 'message' => 'Cannot send message to this user.']);
+        }
+
+        // Send the message
+        $body = "Shared a property: {$property->title}";
+
+        $conversation->messages()->create([
+            'sender_id' => $authUserId,
+            'body' => $body,
+            'property_id' => $property->id,
+        ]);
+
+        return response()->json(['success' => true, 'message' => 'Property shared successfully!']);
     }
 }

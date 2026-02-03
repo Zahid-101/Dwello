@@ -8,6 +8,7 @@ class CompatibilityService
 {
     /**
      * Calculate compatibility between two profiles.
+     * 
      *
      * @param RoommateProfile $viewer
      * @param RoommateProfile $target
@@ -72,10 +73,10 @@ class CompatibilityService
         // If data is missing, we re-normalize based on total weight of available fields.
         $baseWeights = [
             'noise_tolerance' => 0.25,
-            'sleep_schedule'  => 0.25,
-            'study_focus'     => 0.20,
-            'social_level'    => 0.20,
-            'occupation_field'=> 0.10,
+            'sleep_schedule' => 0.25,
+            'study_focus' => 0.20,
+            'social_level' => 0.20,
+            'occupation_field' => 0.10,
         ];
 
         $totalWeight = 0;
@@ -94,7 +95,7 @@ class CompatibilityService
                 $diff = abs($valA - $valB);
                 // Score formula: 1 - (diff / 4)
                 $subScore = max(0, 1 - ($diff / 4));
-                
+
                 $weight = $baseWeights[$attribute];
                 $weightedSum += $subScore * $weight;
                 $totalWeight += $weight;
@@ -106,14 +107,18 @@ class CompatibilityService
                 // For conflict, show both: "Very different... (You: Quiet, Them: Loud)"
                 $labelA = RoommateProfile::getLabel($attribute, $valA);
                 $labelB = RoommateProfile::getLabel($attribute, $valB);
-                
+
                 // Friendly attribute name for display
                 $attrName = str_replace('_', ' ', $attribute);
                 // specialized phrasing
-                if ($attribute === 'sleep_schedule') $attrName = 'sleep routine';
-                if ($attribute === 'noise_tolerance') $attrName = 'noise preference';
-                if ($attribute === 'study_focus') $attrName = 'study habits';
-                if ($attribute === 'social_level') $attrName = 'social preference';
+                if ($attribute === 'sleep_schedule')
+                    $attrName = 'sleep routine';
+                if ($attribute === 'noise_tolerance')
+                    $attrName = 'noise preference';
+                if ($attribute === 'study_focus')
+                    $attrName = 'study habits';
+                if ($attribute === 'social_level')
+                    $attrName = 'social preference';
 
                 if ($diff <= 1) {
                     $reasons[] = ['type' => 'positive', 'text' => "Similar $attrName ($labelA)"];
@@ -130,12 +135,29 @@ class CompatibilityService
 
             $match = strcasecmp($viewer->occupation_field, $target->occupation_field) === 0;
             $subScore = $match ? 1.0 : 0.0;
-            
+
             $weightedSum += $subScore * $weight;
             $breakdown['occupation_field'] = $match ? 100 : 0;
 
             if ($match) {
                 $reasons[] = ['type' => 'positive', 'text' => "Similar occupation background"];
+            }
+        }
+
+        // 3. Property Type Match
+        if ($viewer->preferred_property_type && $target->preferred_property_type) {
+            // Give it a small weight bonus or factor it into existing weights?
+            // Let's add it as a new factor.
+            $weight = 0.15; // 15% weight
+            $totalWeight += $weight;
+
+            if ($viewer->preferred_property_type === $target->preferred_property_type) {
+                $weightedSum += 1.0 * $weight;
+                $breakdown['property_type'] = 100;
+                $reasons[] = ['type' => 'positive', 'text' => "Both looking for a " . ucfirst($viewer->preferred_property_type)];
+            } else {
+                $breakdown['property_type'] = 0;
+                $reasons[] = ['type' => 'warning', 'text' => "Looking for different property types ({$viewer->preferred_property_type} vs {$target->preferred_property_type})"];
             }
         }
 
@@ -150,7 +172,7 @@ class CompatibilityService
 
         // Normalize score to 0-100
         $finalScore = ($weightedSum / $totalWeight) * 100;
-        
+
         // ... filtering reasons remains similar ...
 
         // Filter reasons: max 3 positives, max 2 warnings, total max 5

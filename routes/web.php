@@ -7,6 +7,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ConversationController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\FavoriteController;
+use App\Http\Controllers\UserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,7 +15,6 @@ use App\Http\Controllers\FavoriteController;
 |--------------------------------------------------------------------------
 */
 
-// Landing page
 Route::get('/', function () {
     return view('home');
 })->name('home');
@@ -25,6 +25,9 @@ Route::get('/properties', [PropertyController::class, 'index'])
 
 Route::get('/roommates', [RoommateProfileController::class, 'index'])
     ->name('roommates.index');
+
+Route::get('/users/{user}', [UserController::class, 'show'])
+    ->name('users.show');
 
 
 
@@ -44,11 +47,14 @@ Route::middleware('auth')->group(function () {
 
     // Property creation & management (Landlords only)
     Route::middleware(['role:landlord'])->group(function () {
+        Route::get('/my-listings', [PropertyController::class, 'myListings'])
+            ->name('properties.my-listings');
+
         Route::get('/properties/create', [PropertyController::class, 'create'])
             ->name('properties.create');
         Route::post('/properties', [PropertyController::class, 'store'])
             ->name('properties.store');
-        
+
         Route::get('/properties/{property}/edit', [PropertyController::class, 'edit'])
             ->name('properties.edit');
         Route::put('/properties/{property}', [PropertyController::class, 'update'])
@@ -67,6 +73,9 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/roommates/{user}/compatibility', [RoommateProfileController::class, 'compatibility'])
         ->name('roommates.compatibility');
+
+    Route::post('/roommates/{user}/reject', [RoommateProfileController::class, 'reject'])
+        ->name('roommates.reject');
 
     // Dashboard just redirects to main app (properties)
     Route::get('/dashboard', function () {
@@ -90,6 +99,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/properties/{property}/message', [ConversationController::class, 'startProperty'])->name('conversations.startProperty');
     Route::post('/roommates/{user}/message', [ConversationController::class, 'startRoommate'])->name('conversations.startRoommate');
 
+    // Message Request Actions
+    Route::post('/conversations/{conversation}/accept', [ConversationController::class, 'accept'])->name('conversations.accept');
+    Route::post('/conversations/{conversation}/reject', [ConversationController::class, 'reject'])->name('conversations.reject');
+    Route::post('/conversations/{conversation}/unblock', [ConversationController::class, 'unblock'])->name('conversations.unblock');
+
     // Reviews
     Route::post('/properties/{property}/reviews', [\App\Http\Controllers\ReviewController::class, 'store'])->name('reviews.store');
 
@@ -97,6 +111,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/admin/reviews', [\App\Http\Controllers\AdminReviewController::class, 'index'])->name('admin.reviews.index');
     Route::post('/admin/reviews/{review}/approve', [\App\Http\Controllers\AdminReviewController::class, 'approve'])->name('admin.reviews.approve');
     Route::post('/admin/reviews/{review}/reject', [\App\Http\Controllers\AdminReviewController::class, 'reject'])->name('admin.reviews.reject');
+
+    // Share Property
+    Route::post('/properties/{property}/share', [PropertyController::class, 'share'])->name('properties.share');
+    Route::get('/users/search', [ProfileController::class, 'search'])->name('users.search');
 });
 
 

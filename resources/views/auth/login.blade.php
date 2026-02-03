@@ -6,7 +6,11 @@
 <div class="container mx-auto px-4 py-8 md:px-6" style="min-height: calc(100vh - 160px); display:flex; align-items:center; justify-content:center;">
     <div style="width:100%; max-width:420px; background:white; border-radius:20px; box-shadow:0 10px 15px -3px rgba(0,0,0,0.1); padding:24px;">
         <h2 style="font-family:'Poppins',sans-serif; font-size:24px; font-weight:600; margin-bottom:8px; color:var(--gray-900);">
-            Welcome back 👋
+            @if(request('role'))
+                Welcome back, {{ ucfirst(request('role')) }} 👋
+            @else
+                Welcome back 👋
+            @endif
         </h2>
         <p style="color:var(--gray-600); margin-bottom:20px; font-size:14px;">
             Log in to manage your listings and connect with flatmates.

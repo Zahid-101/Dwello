@@ -24,6 +24,8 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'profile_photo_path',
+        'phone_number',
     ];
 
     /**
@@ -85,5 +87,11 @@ class User extends Authenticatable
         // Simple admin check based on .env config or specific email
         // Logic: if email matches config OR role is 'admin' (if we had that role)
         return $this->email === config('app.admin_email', 'admin@dwello.com');
+    }
+
+    public function rejectedUsers()
+    {
+        return $this->belongsToMany(User::class, 'rejected_matches', 'user_id', 'rejected_user_id')
+            ->withTimestamps();
     }
 }

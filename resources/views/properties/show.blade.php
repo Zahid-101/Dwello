@@ -158,17 +158,24 @@
                     <div>
                         <div class="font-semibold text-gray-900">{{ $property->user->name ?? 'Landlord' }}</div>
                         <div class="text-sm text-gray-500">Property Owner</div>
+                        <a href="{{ route('users.show', $property->user) }}" class="text-sm font-medium text-dwello-primary hover:underline" style="color: var(--dwello-primary);">
+                            View Profile
+                        </a>
                     </div>
                 </div>
 
                 @auth
                     @if(auth()->id() !== $property->user_id)
-                        <form action="{{ route('conversations.startProperty', $property) }}" method="POST">
+                        <form action="{{ route('conversations.startProperty', $property) }}" method="POST" class="mb-3">
                             @csrf
-                            <button type="submit" class="w-full bg-orange-500 text-white rounded-xl py-3 text-lg font-medium hover:bg-orange-600 transition shadow-lg shadow-orange-500/30" style="background-color: var(--dwello-primary); color: white; width: 100%; padding: 12px; border-radius: 12px; font-weight: 600; font-size: 16px; border: none; cursor: pointer; transition: background 0.2s;">
+                            <button type="submit" class="w-full bg-orange-500 text-white rounded-xl py-3 text-lg font-medium hover:bg-orange-600 transition shadow-lg shadow-orange-500/30">
                                 Message Landlord
                             </button>
                         </form>
+
+                        <button onclick="openShareModal()" class="w-full bg-white text-gray-700 border border-gray-300 rounded-xl py-3 text-lg font-medium hover:bg-gray-50 transition shadow-sm">
+                            Share Property
+                        </button>
                     @else
                         <div class="flex flex-col gap-3">
                             <a href="{{ route('properties.edit', $property) }}" class="btn btn-outline w-full text-center">Edit Listing</a>
@@ -182,7 +189,7 @@
                     @endif
                 @else
                     <div style="text-align: center;">
-                        <a href="{{ route('login') }}" class="w-full block text-center bg-orange-500 text-white rounded-xl py-3 text-lg font-medium hover:bg-orange-600 transition shadow-lg shadow-orange-500/30" style="background-color: var(--dwello-primary); color: white; width: 100%; padding: 12px; border-radius: 12px; font-weight: 600; font-size: 16px; text-decoration: none; display: block; box-sizing: border-box;">
+                        <a href="{{ route('login') }}" class="w-full block text-center bg-orange-500 text-white rounded-xl py-3 text-lg font-medium hover:bg-orange-600 transition shadow-lg shadow-orange-500/30">
                             Log in to Message
                         </a>
                     </div>
@@ -192,6 +199,134 @@
     </div>
 </div>
     </div>
+
+    <!-- Share Modal -->
+    <div id="share-modal" class="fixed inset-0 z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="closeShareModal()"></div>
+
+        <div class="fixed inset-0 z-10 overflow-y-auto">
+            <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                <div class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+                    <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+                        <div class="sm:flex sm:items-start">
+                             <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left w-full">
+                                <h3 class="text-base font-semibold leading-6 text-gray-900" id="modal-title">Share Property</h3>
+                                <div class="mt-2">
+                                    <p class="text-sm text-gray-500 mb-4">Search for a user to share "<strong>{{ $property->title }}</strong>" with.</p>
+                                    
+                                    <input type="text" id="user-search-input" placeholder="Search by name or email..." 
+                                           class="w-full border-gray-300 rounded-lg shadow-sm focus:border-orange-500 focus:ring-orange-500">
+                                    
+                                    <div id="search-results" class="mt-4 max-h-60 overflow-y-auto space-y-2">
+                                        <!-- Results will appear here -->
+                                        <p class="text-sm text-gray-400 text-center py-2" id="empty-state">Start typing to search...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+                        <button type="button" class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto" onclick="closeShareModal()">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function openShareModal() {
+            document.getElementById('share-modal').classList.remove('hidden');
+            document.getElementById('user-search-input').focus();
+        }
+
+        function closeShareModal() {
+            document.getElementById('share-modal').classList.add('hidden');
+            document.getElementById('user-search-input').value = '';
+            document.getElementById('search-results').innerHTML = '<p class="text-sm text-gray-400 text-center py-2">Start typing to search...</p>';
+        }
+
+        // Search logic
+        const input = document.getElementById('user-search-input');
+        let timeout = null;
+
+        input.addEventListener('input', function() {
+            clearTimeout(timeout);
+            const query = this.value;
+
+            if (query.length < 2) {
+                document.getElementById('search-results').innerHTML = '<p class="text-sm text-gray-400 text-center py-2">Start typing to search...</p>';
+                return;
+            }
+
+            timeout = setTimeout(() => {
+                fetch(`/users/search?q=${encodeURIComponent(query)}`)
+                    .then(response => response.json())
+                    .then(users => {
+                        const container = document.getElementById('search-results');
+                        container.innerHTML = '';
+                        
+                        if (users.length === 0) {
+                            container.innerHTML = '<p class="text-sm text-gray-400 text-center py-2">No users found.</p>';
+                            return;
+                        }
+
+                        users.forEach(user => {
+                            const div = document.createElement('div');
+                            div.className = 'flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition';
+                            div.innerHTML = `
+                                <div>
+                                    <div class="font-medium text-gray-900">${user.name}</div>
+                                    <div class="text-xs text-gray-500">${user.email}</div>
+                                </div>
+                                <button onclick="shareWithUser(${user.id})" class="text-sm bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-medium hover:bg-blue-200">
+                                    Send
+                                </button>
+                            `;
+                            container.appendChild(div);
+                        });
+                    });
+            }, 300);
+        });
+
+        // Share logic
+        function shareWithUser(userId) {
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = 'Sending...';
+            btn.disabled = true;
+
+            fetch('{{ route("properties.share", $property) }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ recipient_id: userId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.success) {
+                    btn.innerHTML = 'Sent!';
+                    btn.classList.remove('bg-blue-100', 'text-blue-700');
+                    btn.classList.add('bg-green-100', 'text-green-700');
+                    setTimeout(() => {
+                        closeShareModal();
+                         alert(data.message);
+                    }, 500);
+                } else {
+                    alert(data.message);
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error(error);
+                alert('Something went wrong.');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            });
+        }
+    </script>
 
     {{-- Reviews Section --}}
     <div class="review-section-container mb-12">
@@ -251,49 +386,34 @@
             <div>
                 @auth
                     @if(auth()->id() !== $property->user_id)
-                        <?php
-                            // Check conversation existence (simplified check in view for UI toggle, logic enforced in controller)
-                            $hasConvo = \App\Models\Conversation::where('property_id', $property->id)
-                                ->where(function($q) {
-                                    $q->where('user_one_id', auth()->id())
-                                      ->orWhere('user_two_id', auth()->id());
-                                })->exists();
-                        ?>
-
-                        @if($hasConvo)
-                            <div style="background: white; border: 1px solid var(--gray-200); padding: 24px; border-radius: 16px;">
-                                <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 16px;">Write a Review</h3>
-                                <form action="{{ route('reviews.store', $property) }}" method="POST">
-                                    @csrf
-                                    <div style="margin-bottom: 16px;">
-                                        <label style="display: block; margin-bottom: 8px; font-weight: 500;">Rating</label>
-                                        <div class="star-rating">
-                                            @for($i = 5; $i >= 1; $i--)
-                                                <input type="radio" id="star{{$i}}" name="rating" value="{{ $i }}" {{ old('rating') == $i ? 'checked' : '' }} required>
-                                                <label for="star{{$i}}" title="{{ $i }} stars">★</label>
-                                            @endfor
-                                        </div>
-                                        @error('rating')
-                                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                                        @enderror
+                        <div style="background: white; border: 1px solid var(--gray-200); padding: 24px; border-radius: 16px;">
+                            <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 16px;">Write a Review</h3>
+                            <form action="{{ route('reviews.store', $property) }}" method="POST">
+                                @csrf
+                                <div style="margin-bottom: 16px;">
+                                    <label style="display: block; margin-bottom: 8px; font-weight: 500;">Rating</label>
+                                    <div class="star-rating">
+                                        @for($i = 5; $i >= 1; $i--)
+                                            <input type="radio" id="star{{$i}}" name="rating" value="{{ $i }}" {{ old('rating') == $i ? 'checked' : '' }} required>
+                                            <label for="star{{$i}}" title="{{ $i }} stars">★</label>
+                                        @endfor
                                     </div>
+                                    @error('rating')
+                                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
 
-                                    <div style="margin-bottom: 16px;">
-                                        <label style="display: block; margin-bottom: 8px; font-weight: 500;">Comment</label>
-                                        <textarea name="comment" rows="4" class="@error('comment') border-red-500 @enderror" style="width: 100%; border: 1px solid var(--gray-300); border-radius: 8px; padding: 12px;">{{ old('comment') }}</textarea>
-                                        @error('comment')
-                                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                                        @enderror
-                                    </div>
+                                <div style="margin-bottom: 16px;">
+                                    <label style="display: block; margin-bottom: 8px; font-weight: 500;">Comment</label>
+                                    <textarea name="comment" rows="4" class="@error('comment') border-red-500 @enderror" style="width: 100%; border: 1px solid var(--gray-300); border-radius: 8px; padding: 12px;">{{ old('comment') }}</textarea>
+                                    @error('comment')
+                                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
 
-                                    <button type="submit" class="btn btn-primary" style="width: 100%;">Submit Review</button>
-                                </form>
-                            </div>
-                        @else
-                            <div style="background: var(--gray-50); padding: 24px; border-radius: 16px; text-align: center; color: var(--gray-600);">
-                                <p>You verify this property by contacting the landlord before you can leave a review.</p>
-                            </div>
-                        @endif
+                                <button type="submit" class="btn btn-primary" style="width: 100%;">Submit Review</button>
+                            </form>
+                        </div>
                     @else
                         <div style="background: var(--gray-50); padding: 24px; border-radius: 16px; text-align: center; color: var(--gray-600);">
                             <p>You cannot review your own property.</p>
@@ -327,4 +447,15 @@
     });
 </script>
 @endif
+@endpush
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('share') === 'true') {
+            openShareModal();
+        }
+    });
+</script>
 @endpush

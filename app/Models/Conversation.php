@@ -15,6 +15,9 @@ class Conversation extends Model
         'user_one_id',
         'user_two_id',
         'last_message_at',
+        'status',
+        'started_by',
+        'blocked_by',
     ];
 
     protected $casts = [
@@ -56,7 +59,7 @@ class Conversation extends Model
     {
         return $query->where(function ($q) use ($userId) {
             $q->where('user_one_id', $userId)
-              ->orWhere('user_two_id', $userId);
+                ->orWhere('user_two_id', $userId);
         });
     }
 }
