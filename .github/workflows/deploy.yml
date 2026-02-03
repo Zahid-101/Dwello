@@ -47,8 +47,6 @@ jobs:
           username: ${{ secrets.DWELLO_USER }}
           key: ${{ secrets.DWELLO_KEY }}
           script: |
-            eval "$(ssh-agent -s)";
-            ssh-add ~/.ssh/id_ed25519;
             cd /var/www/Dwello;
             git pull origin main;
             composer install --no-interaction --prefer-dist;
