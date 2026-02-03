@@ -55,5 +55,21 @@ jobs:
             cd /var/www/Dwello;
             git pull origin main;
             composer install --no-interaction --prefer-dist;
+
+            mysql -u${{ secrets.DB_USER }} -p${{ secrets.DB_PASSWORD }} ${{ secrets.DB_NAME }} -e "
+            SET FOREIGN_KEY_CHECKS = 0;
+            SET @tables = NULL;
+            SELECT GROUP_CONCAT(CONCAT('`', table_name, '`'))
+            INTO @tables
+            FROM information_schema.tables
+            WHERE table_schema = DATABASE();
+            SET @sql = CONCAT('DROP TABLE IF EXISTS ', @tables);  
+            PREPARE stmt FROM @sql;
+            EXECUTE stmt;
+            DEALLOCATE PREPARE stmt;
+            SET FOREIGN_KEY_CHECKS = 1;
+            "
+
+            mysql -u${{ secrets.DB_USER }} -p${{ secrets.DB_PASSWORD }} ${{ secrets.DB_NAME }} < dwello.sql
             php artisan migrate --force;
             php artisan optimize;
