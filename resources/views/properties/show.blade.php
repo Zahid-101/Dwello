@@ -152,9 +152,13 @@
         <div>
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 sticky top-24">
                 <div class="flex items-center gap-3 mb-6">
-                    <div class="w-14 h-14 rounded-full bg-orange-500 text-white flex items-center justify-center text-2xl font-bold">
-                        {{ strtoupper(substr($property->user->name ?? 'L', 0, 1)) }}
-                    </div>
+                    @if($property->user && $property->user->profile_photo_url)
+                         <img src="{{ $property->user->profile_photo_url }}" alt="{{ $property->user->name }}" class="w-14 h-14 rounded-full object-cover border border-orange-100 shadow-sm">
+                    @else
+                        <div class="w-14 h-14 rounded-full bg-orange-500 text-white flex items-center justify-center text-2xl font-boldshadow-sm">
+                            {{ strtoupper(substr($property->user->name ?? 'L', 0, 1)) }}
+                        </div>
+                    @endif
                     <div>
                         <div class="font-semibold text-gray-900">{{ $property->user->name ?? 'Landlord' }}</div>
                         <div class="text-sm text-gray-500">Property Owner</div>
@@ -386,34 +390,66 @@
             <div>
                 @auth
                     @if(auth()->id() !== $property->user_id)
-                        <div style="background: white; border: 1px solid var(--gray-200); padding: 24px; border-radius: 16px;">
-                            <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 16px;">Write a Review</h3>
-                            <form action="{{ route('reviews.store', $property) }}" method="POST">
-                                @csrf
-                                <div style="margin-bottom: 16px;">
-                                    <label style="display: block; margin-bottom: 8px; font-weight: 500;">Rating</label>
-                                    <div class="star-rating">
-                                        @for($i = 5; $i >= 1; $i--)
-                                            <input type="radio" id="star{{$i}}" name="rating" value="{{ $i }}" {{ old('rating') == $i ? 'checked' : '' }} required>
-                                            <label for="star{{$i}}" title="{{ $i }} stars">★</label>
-                                        @endfor
+                        @if($userReview)
+                            <div style="background: var(--gray-50); padding: 24px; border-radius: 16px; text-align: center; border: 1px solid var(--gray-200);">
+                                <div style="color: #059669; margin-bottom: 8px; font-weight: 600;">
+                                    ✓ You have reviewed this property
+                                </div>
+                                <p style="color: var(--gray-600); font-size: 14px; margin-bottom: 12px;">
+                                    Your review is 
+                                    @if($userReview->status === 'approved')
+                                        <span style="color: #059669; font-weight: 600;">Live</span>
+                                    @elseif($userReview->status === 'pending')
+                                        <span style="color: #d97706; font-weight: 600;">Pending Approval</span>
+                                    @else
+                                        <span style="color: #dc2626; font-weight: 600;">Rejected</span>
+                                    @endif
+                                </p>
+                                <div style="font-style: italic; color: var(--gray-500);">
+                                    "{{ Str::limit($userReview->comment, 100) }}"
+                                </div>
+                            </div>
+                        @else
+                            <div style="background: white; border: 1px solid var(--gray-200); padding: 24px; border-radius: 16px;">
+                                <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 16px;">Write a Review</h3>
+                                <form action="{{ route('reviews.store', $property) }}" method="POST" enctype="multipart/form-data">
+                                    @csrf
+                                    <div style="margin-bottom: 16px;">
+                                        <label style="display: block; margin-bottom: 8px; font-weight: 500;">Rating</label>
+                                        <div class="star-rating">
+                                            @for($i = 5; $i >= 1; $i--)
+                                                <input type="radio" id="star{{$i}}" name="rating" value="{{ $i }}" {{ old('rating') == $i ? 'checked' : '' }} required>
+                                                <label for="star{{$i}}" title="{{ $i }} stars">★</label>
+                                            @endfor
+                                        </div>
+                                        @error('rating')
+                                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                        @enderror
                                     </div>
-                                    @error('rating')
-                                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                                    @enderror
-                                </div>
 
-                                <div style="margin-bottom: 16px;">
-                                    <label style="display: block; margin-bottom: 8px; font-weight: 500;">Comment</label>
-                                    <textarea name="comment" rows="4" class="@error('comment') border-red-500 @enderror" style="width: 100%; border: 1px solid var(--gray-300); border-radius: 8px; padding: 12px;">{{ old('comment') }}</textarea>
-                                    @error('comment')
-                                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                                    @enderror
-                                </div>
+                                    <div style="margin-bottom: 16px;">
+                                        <label style="display: block; margin-bottom: 8px; font-weight: 500;">Rental Agreement Proof <span class="text-red-500">*</span></label>
+                                        <p style="font-size: 12px; color: var(--gray-500); margin-bottom: 8px;">Please upload an image or PDF of your rental agreement or receipt.</p>
+                                        <input type="file" name="rental_agreement" accept=".pdf,.jpg,.jpeg,.png" required 
+                                               class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100"
+                                               style="border: 1px solid var(--gray-300); border-radius: 8px; padding: 8px;">
+                                        @error('rental_agreement')
+                                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                        @enderror
+                                    </div>
 
-                                <button type="submit" class="btn btn-primary" style="width: 100%;">Submit Review</button>
-                            </form>
-                        </div>
+                                    <div style="margin-bottom: 16px;">
+                                        <label style="display: block; margin-bottom: 8px; font-weight: 500;">Comment</label>
+                                        <textarea name="comment" rows="4" class="@error('comment') border-red-500 @enderror" style="width: 100%; border: 1px solid var(--gray-300); border-radius: 8px; padding: 12px;">{{ old('comment') }}</textarea>
+                                        @error('comment')
+                                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+
+                                    <button type="submit" class="btn btn-primary" style="width: 100%;">Submit Review</button>
+                                </form>
+                            </div>
+                        @endif
                     @else
                         <div style="background: var(--gray-50); padding: 24px; border-radius: 16px; text-align: center; color: var(--gray-600);">
                             <p>You cannot review your own property.</p>

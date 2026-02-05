@@ -37,7 +37,16 @@ class ConversationController extends Controller
             ->orderBy('updated_at', 'desc')
             ->get();
 
-        return view('messages.index', compact('conversations'));
+        // Fetch potential recipients (people the user has conversations with)
+        $recipients = Conversation::forUser($userId)
+            ->get()
+            ->map(function ($conversation) use ($userId) {
+                return $conversation->otherParticipant($userId);
+            })
+            ->filter()
+            ->unique('id');
+
+        return view('messages.index', compact('conversations', 'recipients'));
     }
 
     /**

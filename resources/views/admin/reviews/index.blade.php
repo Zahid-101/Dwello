@@ -43,7 +43,8 @@
                         <th style="padding: 16px; font-weight: 600; font-size: 14px; color: var(--gray-600);">Reviewer</th>
                         <th style="padding: 16px; font-weight: 600; font-size: 14px; color: var(--gray-600);">Rating</th>
                         <th style="padding: 16px; font-weight: 600; font-size: 14px; color: var(--gray-600); width: 40%;">Comment</th>
-                        <th style="padding: 16px; font-weight: 600; font-size: 14px; color: var(--gray-600); text-align: right;">Actions</th>
+                        <th style="padding: 16px; font-weight: 600; font-size: 14px; color: var(--gray-600);">Proof</th>
+                        <th style="padding: 16px; font-weight: 600; font-size: 14px; color: var(--gray-600);">Actions</th>
                     </tr>
                 </thead>
                 <tbody style="divide-y: 1px solid var(--gray-100);">
@@ -58,6 +59,13 @@
                             <td style="padding: 16px;">{{ $review->user->name }}</td>
                             <td style="padding: 16px; color: #f59e0b; font-weight: 600;">{{ $review->rating }} ★</td>
                             <td style="padding: 16px; color: var(--gray-700);">{{ $review->comment }}</td>
+                            <td style="padding: 16px;">
+                                @if($review->rental_agreement_path)
+                                    <a href="{{ Storage::url($review->rental_agreement_path) }}" target="_blank" style="color: var(--dwello-primary); text-decoration: underline; font-size: 14px;">View Proof</a>
+                                @else
+                                    <span style="color: var(--gray-400); font-size: 14px;">N/A</span>
+                                @endif
+                            </td>
                             <td style="padding: 16px; text-align: right;">
                                 <div style="display: flex; gap: 8px; justify-content: flex-end;">
                                     <form action="{{ route('admin.reviews.approve', $review) }}" method="POST">

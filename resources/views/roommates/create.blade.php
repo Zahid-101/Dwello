@@ -65,13 +65,13 @@
                     </div>
                     <div class="flex-1">
                         <input type="file" name="profile_photo" accept="image/*" class="block w-full text-sm text-slate-500
-                                  file:mr-4 file:py-2 file:px-4
-                                  file:rounded-full file:border-0
-                                  file:text-sm file:font-semibold
-                                  file:bg-violet-50 file:text-violet-700
-                                  hover:file:bg-violet-100
-                                  cursor-pointer
-                                " onchange="previewImage(this)" />
+                                      file:mr-4 file:py-2 file:px-4
+                                      file:rounded-full file:border-0
+                                      file:text-sm file:font-semibold
+                                      file:bg-violet-50 file:text-violet-700
+                                      hover:file:bg-violet-100
+                                      cursor-pointer
+                                    " onchange="previewImage(this)" />
                     </div>
                     @error('profile_photo')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -160,6 +160,15 @@
                             <option value="house" {{ old('preferred_property_type', $profile->preferred_property_type ?? '') == 'house' ? 'selected' : '' }}>House</option>
                         </select>
                     </div>
+                </div>
+
+                <div
+                    style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
+                    <p style="font-size: 14px; color: #1e3a8a; margin: 0;">
+                        <strong>Note:</strong> Please add your information carefully. We use your <strong>Preferred
+                            City</strong> and <strong>Budget</strong> to match you with properties on the homepage and
+                        search results.
+                    </p>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6" style="margin-bottom: 16px;">

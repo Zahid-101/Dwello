@@ -15,6 +15,7 @@ class Review extends Model
         'rating',
         'comment',
         'status',
+        'rental_agreement_path',
     ];
 
     public function property()
