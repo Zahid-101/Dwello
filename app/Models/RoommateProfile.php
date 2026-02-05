@@ -21,6 +21,7 @@ class RoommateProfile extends Model
         'preferred_location',
         'move_in_date',
         'is_smoker',
+        'is_verified',
         'has_pets',
         'bio',
         'pref_no_smoker',

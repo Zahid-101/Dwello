@@ -8,6 +8,8 @@ use App\Http\Controllers\ConversationController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\StripeController;
+use App\Http\Controllers\BoostController;
 
 /*
 |--------------------------------------------------------------------------
@@ -26,8 +28,7 @@ Route::get('/properties', [PropertyController::class, 'index'])
 Route::get('/roommates', [RoommateProfileController::class, 'index'])
     ->name('roommates.index');
 
-Route::get('/users/{user}', [UserController::class, 'show'])
-    ->name('users.show');
+
 
 
 
@@ -91,6 +92,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/favorites/{roommateProfile}', [FavoriteController::class, 'toggle'])->name('favorites.toggle');
 
     // Messaging Routes
+    // Scheduled Messages (Must be before wildcard /messages/{conversation})
+    Route::post('/messages/schedule', [\App\Http\Controllers\ScheduledMessageController::class, 'store'])->name('messages.schedule');
+
     Route::get('/messages', [ConversationController::class, 'index'])->name('messages.index');
     Route::get('/messages/{conversation}', [ConversationController::class, 'show'])->name('messages.show');
     Route::post('/messages/{conversation}', [MessageController::class, 'store'])->name('messages.store');
@@ -98,6 +102,8 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/properties/{property}/message', [ConversationController::class, 'startProperty'])->name('conversations.startProperty');
     Route::post('/roommates/{user}/message', [ConversationController::class, 'startRoommate'])->name('conversations.startRoommate');
+
+
 
     // Message Request Actions
     Route::post('/conversations/{conversation}/accept', [ConversationController::class, 'accept'])->name('conversations.accept');
@@ -112,9 +118,12 @@ Route::middleware('auth')->group(function () {
     Route::post('/admin/reviews/{review}/approve', [\App\Http\Controllers\AdminReviewController::class, 'approve'])->name('admin.reviews.approve');
     Route::post('/admin/reviews/{review}/reject', [\App\Http\Controllers\AdminReviewController::class, 'reject'])->name('admin.reviews.reject');
 
-    // Share Property
     Route::post('/properties/{property}/share', [PropertyController::class, 'share'])->name('properties.share');
     Route::get('/users/search', [ProfileController::class, 'search'])->name('users.search');
+
+    Route::get('/boost-ads', [BoostController::class, 'index'])->name('boost.index');
+    Route::post('/boost-ads', [BoostController::class, 'store'])->name('boost.store');
+    Route::delete('/boost-ads/{id}', [BoostController::class, 'destroy'])->name('boost.destroy');
 });
 
 
@@ -122,6 +131,20 @@ Route::middleware('auth')->group(function () {
 Route::get('/properties/{property}', [PropertyController::class, 'show'])
     ->name('properties.show');
 
+Route::get('/users/{user}', [UserController::class, 'show'])
+    ->name('users.show');
+
 
 // Breeze auth routes (login, register, logout, etc.)
 require __DIR__ . '/auth.php';
+
+Route::view('/payment', 'payment');
+
+Route::view('/success', 'payment-success');
+Route::view('/cancel', 'payment-cancel');
+
+Route::post('/create-checkout-session', [StripeController::class, 'createCheckoutSession'])->name('stripe.checkout');
+
+Route::view('/payment', 'payment')->name('payment');
+Route::get('/payment-success', [StripeController::class, 'success'])->name('payment.success');
+Route::view('/payment-cancel', 'payment-cancel')->name('payment.cancel');

@@ -26,6 +26,10 @@ class User extends Authenticatable
         'role',
         'profile_photo_path',
         'phone_number',
+        'is_premium',
+        'premium_subscription_date',
+        'subscription_plan',
+        'listing_limit',
     ];
 
     /**
@@ -93,5 +97,13 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(User::class, 'rejected_matches', 'user_id', 'rejected_user_id')
             ->withTimestamps();
+    }
+
+    public function getProfilePhotoUrlAttribute()
+    {
+        if ($this->profile_photo_path) {
+            return \Illuminate\Support\Facades\Storage::url($this->profile_photo_path) . '?v=' . time();
+        }
+        return null;
     }
 }

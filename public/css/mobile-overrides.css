@@ -1,127 +1,123 @@
-/* Mobile Overrides for Dwello */
-@media (max-width: 640px) {
+/* Mobile Navigation Overrides */
+@media (max-width: 768px) {
 
-    /* Home Page */
-    .home-grid-container {
-        display: flex !important;
-        flex-direction: column !important;
-        gap: 40px !important;
-    }
-
-    .home-hero-text h2 {
-        font-size: 28px !important;
-    }
-
-    /* Layout Footer */
-    .layout-footer-grid {
-        grid-template-columns: 1fr !important;
-        gap: 32px !important;
-    }
-
-    /* Properties Show */
-    .property-show-grid {
-        display: flex !important;
-        flex-direction: column !important;
-    }
-
-    .property-gallery-grid {
-        grid-template-columns: 1fr !important;
-        height: auto !important;
-    }
-
-    .property-gallery-side {
-        display: none !important;
-    }
-
-    .property-gallery-main {
-        height: 300px !important;
-        width: 100% !important;
-    }
-
-    .feature-grid {
-        grid-template-columns: repeat(2, 1fr) !important;
-    }
-
-    /* Roommates Show */
-    .roommate-show-grid {
-        display: flex !important;
-        flex-direction: column !important;
-    }
-
-    .roommate-inner-grid {
-        grid-template-columns: 1fr !important;
-    }
-
-    .roommate-header {
-        flex-direction: column !important;
-        text-align: center !important;
-    }
-
-    /* Message Containers */
-    .message-container-height {
-        height: calc(100vh - 80px) !important;
-    }
-
-    /* Properties/Roommates Index Layout */
-    .listing-layout {
-        flex-direction: column !important;
-    }
-
-    .listing-sidebar {
-        width: 100% !important;
-        max-width: none !important;
-        border-right: none !important;
-        border-bottom: 1px solid #e5e7eb !important;
-    }
-
-    .reviews-grid {
-        grid-template-columns: 1fr !important;
-    }
-
-    .review-section-container {
-        padding: 20px !important;
-        width: 100% !important;
-    }
-
-    .roommate-index-grid {
-        grid-template-columns: 1fr !important;
-    }
-
-    /* Navbar Visibility Overrides (match md breakpoint approx or strict mobile) */
+    /* Hide Desktop Nav */
     .desktop-nav {
         display: none !important;
     }
 
+    /* Show Mobile Menu Button */
     .mobile-menu-btn {
         display: block !important;
     }
 
-    /* Property Index Map */
-    .map-container {
-        width: 100% !important;
-        height: 300px !important;
-        position: relative !important;
-        order: -1 !important;
-        /* Move map to top on mobile overrides */
+    /* Adjust Container Padding */
+    .container {
+        padding-left: 16px !important;
+        padding-right: 16px !important;
     }
 
-    /* Property Card Row */
+    /* Mobile Menu Container */
+    #mobile-menu {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        background: white;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        padding: 1rem;
+        z-index: 49;
+    }
+
+    .mobile-nav-link {
+        display: block;
+        padding: 12px 16px;
+        color: var(--gray-700);
+        font-weight: 500;
+        border-bottom: 1px solid var(--gray-100);
+    }
+
+    .mobile-nav-link:last-child {
+        border-bottom: none;
+    }
+}
+
+/* Footer Stacking */
+@media (max-width: 768px) {
+    .layout-footer-grid {
+        grid-template-columns: 1fr !important;
+        gap: 2rem !important;
+    }
+}
+
+/* Home Page Grid */
+@media (max-width: 768px) {
+    .home-grid-container {
+        grid-template-columns: 1fr !important;
+        gap: 2rem !important;
+    }
+
+    .home-hero-text {
+        font-size: 28px !important;
+    }
+}
+
+/* Property Listing Layout */
+@media (max-width: 768px) {
+
+    /* Outer Layout */
+    .listing-layout {
+        flex-direction: column !important;
+        height: auto !important;
+        min-height: auto !important;
+    }
+
+    /* Sidebar matches full width */
+    .listing-sidebar {
+        width: 100% !important;
+        border-right: none !important;
+        border-bottom: 1px solid var(--gray-100);
+        height: auto !important;
+        max-height: 300px;
+    }
+
+    /* Inner Wrapper (Results + Map) */
+    .listing-content-wrapper {
+        flex-direction: column !important;
+    }
+
+    /* Results Container: Allow body scroll, remove fixed height */
+    .listing-results-container {
+        height: auto !important;
+        overflow-y: visible !important;
+        order: 2;
+        /* Results below map */
+    }
+
+    /* Map: Ensure visible and fixed height */
+    .map-container {
+        display: block !important;
+        width: 100% !important;
+        height: 400px !important;
+        position: static !important;
+        margin-top: 0 !important;
+        margin-bottom: 24px !important;
+        order: 1;
+        /* Map above results (since results is 2) or use -1 */
+    }
+
+    /* Roommate Grid */
+    .roommate-index-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Property Card Row to Column */
     .property-card-row {
         flex-direction: column !important;
     }
 
     .property-card-img {
         width: 100% !important;
-    }
-}
-
-/* Ensure mobile menu button is hidden on desktop (redundant safety) */
-@media (min-width: 641px) {
-    .mobile-menu-btn {
-        display: none !important;
-    }
-
-    .desktop-nav {
-        display: flex !important;
+        height: 200px !important;
     }
 }

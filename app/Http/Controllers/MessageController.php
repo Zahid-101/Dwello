@@ -15,6 +15,24 @@ class MessageController extends Controller
     {
         $this->authorizeParticipant($conversation);
 
+        // Check Limit for Free Users (Only when sending the FIRST message)
+        if (!auth()->user()->is_premium && $conversation->messages()->count() === 0) {
+            // Count requests sent in the last 7 days
+            $weeklyRequests = Conversation::where('started_by', auth()->id())
+                ->where('created_at', '>=', now()->subDays(7))
+                ->count(); // This count includes the CURRENT conversation if it was just created today.
+
+            // If they are starting the 6th one (or more), block.
+            // Wait, if I created this conversation via 'start' method, it exists.
+            // If I created it today, it counts as 1.
+            // If I have 5 existing ones in the last week, and I create this one -> count is 6.
+            // So if count > 5, I am over the limit.
+
+            if ($weeklyRequests > 5) {
+                return response()->json(['error' => 'Your message requests are full can send only after 1 week.'], 403);
+            }
+        }
+
         $request->validate([
             'body' => 'required|string|max:2000',
         ]);

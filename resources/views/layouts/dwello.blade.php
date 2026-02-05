@@ -26,7 +26,7 @@
 <body>
     {{-- Header --}}
     <header style="background: white; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); position: relative; z-index: 50;">
-        <div class="container" style="padding: 16px 24px;">
+        <div class="w-full mx-auto px-6 py-4" style="max-width: 98%;">
             <div class="flex items-center justify-between">
                 {{-- Logo --}}
                 <div class="flex items-center" style="gap: 12px;">
@@ -88,6 +88,14 @@
                                         style="color: var(--gray-700); text-decoration: none; font-weight: 500;">Create Listing</a>
                                     <a href="{{ route('properties.my-listings') }}" class="nav-link"
                                         style="color: var(--gray-700); text-decoration: none; font-weight: 500;">View Listings</a>
+                                    <a href="{{ route('boost.index') }}" class="nav-link"
+                                        style="color: #ca8a04; text-decoration: none; font-weight: 600; display: inline-flex; items-center;">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                        </svg>
+                                        Boost Up Ad
+                                    </a>
                                 @endif
                             @else
                                 <a href="{{ route('properties.index') }}" class="nav-link"
@@ -140,21 +148,20 @@
                             @auth
                                 <a href="{{ auth()->user()->isLandlord() ? route('profile.edit') : route('roommate-profiles.create') }}"
                                     style="
-                                                                                            font-size: 14px; 
-                                                                                            font-weight: 600; 
-                                                                                            color: var(--dwello-primary); 
-                                                                                            border: 2px solid var(--dwello-primary); 
-                                                                                            padding: 6px 16px; 
-                                                                                            border-radius: 20px; 
-                                                                                            box-shadow: 0 0 10px rgba(0,0,0,0.05);
-                                                                                            transition: all 0.3s ease;
-                                                                                            display: flex;
-                                                                                            align-items: center;
-                                                                                            text-decoration: none;
-                                                                                        ">
-                                    @if(Auth::user()->profile_photo_path)
-                                        <img src="{{ Storage::url(Auth::user()->profile_photo_path) }}"
-                                            alt="{{ Auth::user()->name }}"
+                                                                                                                                                    font-size: 14px; 
+                                                                                                                                                    font-weight: 600; 
+                                                                                                                                                    color: var(--dwello-primary); 
+                                                                                                                                                    border: 2px solid var(--dwello-primary); 
+                                                                                                                                                    padding: 6px 16px; 
+                                                                                                                                                    border-radius: 20px; 
+                                                                                                                                                    box-shadow: 0 0 10px rgba(0,0,0,0.05);
+                                                                                                                                                    transition: all 0.3s ease;
+                                                                                                                                                    display: flex;
+                                                                                                                                                    align-items: center;
+                                                                                                                                                    text-decoration: none;
+                                                                                                                                                ">
+                                    @if(Auth::user()->profile_photo_url)
+                                        <img src="{{ Auth::user()->profile_photo_url }}" alt="{{ Auth::user()->name }}"
                                             style="width: 20px; height: 20px; border-radius: 50%; object-cover: cover; margin-right: 6px;">
                                     @endif
                                     {{ Auth::user()->name }}
@@ -169,18 +176,44 @@
                                             clip-rule="evenodd" />
                                     </svg>
                                 </a>
+                                {{-- Upgrade Button --}}
+                                <a href="{{ url('/payment') }}" style="
+                                                                                            font-size: 14px; 
+                                                                                            font-weight: 600; 
+                                                                                            color: white; 
+                                                                                            background: #f97316; 
+                                                                                            padding: 8px 16px; 
+                                                                                            border-radius: 20px; 
+                                                                                            box-shadow: 0 4px 6px -1px rgba(249, 115, 22, 0.4);
+                                                                                            transition: all 0.3s ease;
+                                                                                            text-decoration: none;
+                                                                                            margin-left: 12px;
+                                                                                            display: inline-flex;
+                                                                                            align-items: center;
+                                                                                            gap: 6px;
+                                                                                        "
+                                    onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                                        stroke="currentColor" style="width: 16px; height: 16px;">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
+                                    </svg>
+                                    Upgrade
+                                </a>
+
                                 <a href="{{ route('profile.edit') }}" style="
-                                                                        display: flex; 
-                                                                        align-items: center; 
-                                                                        justify-content: center;
-                                                                        width: 36px; 
-                                                                        height: 36px; 
-                                                                        border-radius: 50%; 
-                                                                        background: var(--gray-100); 
-                                                                        color: var(--gray-600);
-                                                                        transition: all 0.2s;
-                                                                        text-decoration: none;
-                                                                    " title="Account Settings"
+                                                                                                                                display: flex; 
+                                                                                                                                align-items: center; 
+                                                                                                                                justify-content: center;
+                                                                                                                                width: 36px; 
+                                                                                                                                height: 36px; 
+                                                                                                                                border-radius: 50%; 
+                                                                                                                                background: var(--gray-100); 
+                                                                                                                                color: var(--gray-600);
+                                                                                                                                transition: all 0.2s;
+                                                                                                                                text-decoration: none;
+                                                                                                                            "
+                                    title="Account Settings"
                                     onmouseover="this.style.background='var(--gray-200)'; this.style.color='var(--gray-900)';"
                                     onmouseout="this.style.background='var(--gray-100)'; this.style.color='var(--gray-600)';">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -237,6 +270,14 @@
                                 <a href="{{ route('properties.my-listings') }}"
                                     class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md">View
                                     Listings</a>
+                                <a href="{{ route('boost.index') }}"
+                                    class="block px-3 py-2 text-base font-medium text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50 rounded-md flex items-center font-semibold">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                    </svg>
+                                    Boost Up Ad
+                                </a>
                             @endif
                         @else
                             <a href="{{ route('properties.index') }}"
@@ -258,6 +299,10 @@
                         <a href="{{ route('profile.edit') }}"
                             class="block px-3 py-2 text-base font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded-md">
                             Account Settings
+                        </a>
+                        <a href="{{ url('/payment') }}"
+                            class="block px-3 py-2 text-base font-medium text-orange-600 hover:text-orange-700 hover:bg-orange-50 rounded-md font-bold">
+                            ⚡ Upgrade Plan
                         </a>
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
@@ -309,6 +354,24 @@
             });
         });
     </script>
+
+    {{-- Flash Messages --}}
+    @if(session('error'))
+        <div class="container mx-auto mt-4 px-4">
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                <strong class="font-bold">Error!</strong>
+                <span class="block sm:inline">{{ session('error') }}</span>
+            </div>
+        </div>
+    @endif
+    @if(session('status'))
+        <div class="container mx-auto mt-4 px-4">
+            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+                <strong class="font-bold">Success!</strong>
+                <span class="block sm:inline">{{ session('status') }}</span>
+            </div>
+        </div>
+    @endif
 
     {{-- Page content --}}
     @yield('content')

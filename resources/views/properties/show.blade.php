@@ -152,9 +152,13 @@
         <div>
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 sticky top-24">
                 <div class="flex items-center gap-3 mb-6">
-                    <div class="w-14 h-14 rounded-full bg-orange-500 text-white flex items-center justify-center text-2xl font-bold">
-                        {{ strtoupper(substr($property->user->name ?? 'L', 0, 1)) }}
-                    </div>
+                    @if($property->user && $property->user->profile_photo_url)
+                         <img src="{{ $property->user->profile_photo_url }}" alt="{{ $property->user->name }}" class="w-14 h-14 rounded-full object-cover border border-orange-100 shadow-sm">
+                    @else
+                        <div class="w-14 h-14 rounded-full bg-orange-500 text-white flex items-center justify-center text-2xl font-boldshadow-sm">
+                            {{ strtoupper(substr($property->user->name ?? 'L', 0, 1)) }}
+                        </div>
+                    @endif
                     <div>
                         <div class="font-semibold text-gray-900">{{ $property->user->name ?? 'Landlord' }}</div>
                         <div class="text-sm text-gray-500">Property Owner</div>
