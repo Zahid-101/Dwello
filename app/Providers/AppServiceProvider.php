@@ -35,9 +35,37 @@ class AppServiceProvider extends ServiceProvider
 
         \Illuminate\Support\Facades\View::composer('home', function ($view) {
             $boostedAds = \App\Models\BoostedAd::where('is_active', true)
-                ->with('user')
-                ->inRandomOrder() // Shuffle them so different ones show up first
+                ->with(['user', 'property'])
                 ->get();
+
+            // Personalize if logged in with profile
+            if (auth()->check() && auth()->user()->roommateProfile) {
+                $profile = auth()->user()->roommateProfile;
+
+                // Filter first (Strict Budget)
+                $boostedAds = $boostedAds->filter(function ($ad) use ($profile) {
+                    if (!$ad->property)
+                        return false;
+
+                    // Strict Budget Filter: Show only if rent is within max budget
+                    if ($profile->budget_max && $ad->property->monthly_rent > $profile->budget_max) {
+                        return false;
+                    }
+
+                    return true;
+                });
+
+                // Then Sort by City Match
+                $boostedAds = $boostedAds->sortByDesc(function ($ad) use ($profile) {
+                    if ($ad->property && $profile->preferred_city && stripos($ad->property->city, $profile->preferred_city) !== false) {
+                        return 1;
+                    }
+                    return 0;
+                });
+            } else {
+                $boostedAds = $boostedAds->shuffle();
+            }
+
             $view->with('boostedAds', $boostedAds);
         });
     }

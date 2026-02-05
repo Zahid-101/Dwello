@@ -15,6 +15,34 @@ class PropertyController extends Controller
     {
         $query = Property::query()->orderByDesc('created_at');
 
+        // dump('Checking smart filters...'); // Debug
+
+        // Default Recommendations based on Roommate Profile
+        if (
+            !$request->filled('q') &&
+            !$request->filled('city') &&
+            !$request->filled('min_rent') &&
+            !$request->filled('max_rent') &&
+            !$request->filled('type') &&
+            auth()->check() &&
+            auth()->user()->roommateProfile
+        ) {
+            $profile = auth()->user()->roommateProfile;
+
+            if ($profile->preferred_city) {
+                $query->where('city', 'like', '%' . $profile->preferred_city . '%');
+            }
+
+            if ($profile->budget_max) {
+                $query->where('monthly_rent', '<=', $profile->budget_max);
+            }
+
+            // Optional: Min budget might filter too much if they set it high, but let's include it for accuracy
+            if ($profile->budget_min) {
+                $query->where('monthly_rent', '>=', $profile->budget_min);
+            }
+        }
+
         // Keyword search: title, city, address
         if ($request->filled('q')) {
             $q = $request->input('q');
@@ -75,7 +103,12 @@ class PropertyController extends Controller
     {
         // Eager load everything needed for the view including reviews and their authors
         $property->load(['photos', 'user', 'approvedReviews.user']);
-        return view('properties.show', compact('property'));
+
+        $userReview = auth()->check()
+            ? $property->reviews()->where('user_id', auth()->id())->first()
+            : null;
+
+        return view('properties.show', compact('property', 'userReview'));
     }
 
     /**

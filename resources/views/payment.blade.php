@@ -213,12 +213,19 @@
                                     </svg>
                                     Gold Verified Badge
                                 </li>
-                                <li class="flex items-center text-gray-600">
-                                    <svg class="w-5 h-5 text-yellow-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                                    </svg>
-                                    Boost Up Ads (Top Placement)
+                                <li class="flex items-start text-gray-600">
+                                <svg class="w-5 h-5 text-yellow-500 mr-3 mt-0.5" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                </svg>
+                                <div>
+                                    <span class="block">Boost Up Ads (Top Placement)</span>
+                                    <p class="text-xs text-yellow-600 mt-1 leading-snug">
+                                        Your ads will be shown on the homepage to users who match your property's location and
+                                        budget.
+                                    </p>
+                                </div>
                                 </li>
                             </ul>
                             <button data-plan="gold"
