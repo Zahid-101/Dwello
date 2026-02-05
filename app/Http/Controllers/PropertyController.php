@@ -24,6 +24,7 @@ class PropertyController extends Controller
             !$request->filled('min_rent') &&
             !$request->filled('max_rent') &&
             !$request->filled('type') &&
+            !$request->has('filter') &&
             auth()->check() &&
             auth()->user()->roommateProfile
         ) {
@@ -141,6 +142,28 @@ class PropertyController extends Controller
                 $path = $photo->store("properties/{$property->id}", 'public');
                 $property->photos()->create(['path' => $path]);
             }
+        }
+
+        // Notify Matching Users (Roommates looking for this city/budget)
+        try {
+            $matchingUsers = \App\Models\User::whereHas('roommateProfile', function ($q) use ($property) {
+                // Determine City Match (If preferred_city is set, match it. If NULL, allow all.)
+                $q->where(function ($sub) use ($property) {
+                    $sub->whereNull('preferred_city')
+                        ->orWhere('preferred_city', 'like', '%' . $property->city . '%');
+                });
+
+                // Budget Match
+                if ($property->monthly_rent) {
+                    $q->where('budget_max', '>=', $property->monthly_rent);
+                }
+            })->where('id', '!=', auth()->id())->get();
+
+            if ($matchingUsers->count() > 0) {
+                \Illuminate\Support\Facades\Notification::send($matchingUsers, new \App\Notifications\NewPropertyMatch($property));
+            }
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Notification Error: ' . $e->getMessage());
         }
 
         return redirect()->route('properties.index')

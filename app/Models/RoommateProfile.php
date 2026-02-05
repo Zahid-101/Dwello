@@ -62,8 +62,11 @@ class RoommateProfile extends Model
     /**
      * Get the text label for a lifestyle attribute value (1-5).
      */
-    public static function getLabel(string $attribute, int $value): string
+    public static function getLabel(string $attribute, ?int $value): string
     {
+        if (is_null($value)) {
+            return 'Not specified';
+        }
         $value = (int) $value; // ensure int
 
         switch ($attribute) {

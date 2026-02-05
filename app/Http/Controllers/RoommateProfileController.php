@@ -92,7 +92,7 @@ class RoommateProfileController extends Controller
         if (auth()->check()) {
             $userId = auth()->id();
             $rejectedIds = auth()->user()->rejectedUsers()->pluck('rejected_user_id')->toArray();
-            
+
             $profilesCollection = $profilesCollection->filter(function ($profile) use ($userId, $rejectedIds) {
                 return $profile->user_id !== $userId && !in_array($profile->user_id, $rejectedIds);
             });
@@ -257,10 +257,34 @@ class RoommateProfileController extends Controller
         // Booleans are already sanitized and included in $data by validate() because of merge()
 
         // Create or update the user's profile
-        RoommateProfile::updateOrCreate(
+        $roommateProfile = RoommateProfile::updateOrCreate(
             ['user_id' => auth()->id()],
             $data
         );
+
+        // Notify matching users (Overlap in specific city)
+        try {
+            if ($roommateProfile->preferred_city) {
+                // Find users who are looking for THIS city
+                $matchingUsers = \App\Models\User::whereHas('roommateProfile', function ($q) use ($roommateProfile) {
+                    $q->where('preferred_city', 'like', '%' . $roommateProfile->preferred_city . '%')
+                        ->where('id', '!=', $roommateProfile->id);
+
+                    // Optional: Check budget overlap
+                    $q->where(function ($sub) use ($roommateProfile) {
+                        $sub->where('budget_max', '>=', $roommateProfile->budget_min)
+                            ->where('budget_min', '<=', $roommateProfile->budget_max);
+                    });
+
+                })->where('id', '!=', auth()->id())->get();
+
+                if ($matchingUsers->count() > 0) {
+                    \Illuminate\Support\Facades\Notification::send($matchingUsers, new \App\Notifications\NewRoommateMatch($roommateProfile));
+                }
+            }
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Roommate Notification Error: ' . $e->getMessage());
+        }
 
         return redirect()
             ->route('roommates.index')
@@ -357,15 +381,15 @@ class RoommateProfileController extends Controller
 
         return response()->json($result);
     }
-    
+
     public function reject(User $user)
     {
         if (auth()->id() === $user->id) {
-             return response()->json(['error' => 'Cannot reject yourself'], 400);
+            return response()->json(['error' => 'Cannot reject yourself'], 400);
         }
-        
+
         auth()->user()->rejectedUsers()->syncWithoutDetaching([$user->id]);
-        
+
         return response()->json(['success' => true]);
     }
 }

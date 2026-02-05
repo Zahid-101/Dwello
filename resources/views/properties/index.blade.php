@@ -69,6 +69,10 @@
                 <button type="submit" class="btn btn-primary" style="width: 100%; border-radius: 16px;">
                     Apply Filters
                 </button>
+                <a href="{{ route('properties.index', ['filter' => 'all']) }}" class="btn btn-outline"
+                    style="width: 100%; border-radius: 16px; margin-top: 12px; text-align: center; display: block; text-decoration: none; border-color: var(--gray-300); color: var(--gray-700);">
+                    Show All Properties
+                </a>
             </form>
         </div>
 
@@ -178,7 +182,7 @@
                                 We couldn't find any properties matching your criteria. Try adjusting your filters or search
                                 terms.
                             </p>
-                            <a href="{{ route('properties.index') }}" class="btn btn-outline">
+                            <a href="{{ route('properties.index', ['filter' => 'all']) }}" class="btn btn-outline">
                                 Clear all filters
                             </a>
                         </div>
@@ -188,6 +192,12 @@
                 <div style="margin-top: 24px;">
                     {{ $properties->links() }}
                 </div>
+
+                <p style="text-align: center; margin-top: 24px; color: var(--gray-500); font-size: 13px;">
+                    view all properties which even wont match your peferences
+                    <a href="{{ route('properties.index', ['filter' => 'all']) }}"
+                        style="color: var(--dwello-primary); font-weight: 500; text-decoration: none;">View All</a>
+                </p>
             </div>
 
             {{-- Map --}}
@@ -243,11 +253,11 @@
 
                 const marker = L.marker([listing.lat, listing.lng]).addTo(map);
                 marker.bindPopup(`
-                    <strong>${listing.title}</strong><br/>
-                    ${listing.city}<br/>
-                    LKR ${Number(listing.rent).toLocaleString()}<br/>
-                    <a href="${listing.url}" style="color: #F53003; font-weight: 500; text-decoration: none;">View Details</a>
-                `);
+                            <strong>${listing.title}</strong><br/>
+                            ${listing.city}<br/>
+                            LKR ${Number(listing.rent).toLocaleString()}<br/>
+                            <a href="${listing.url}" style="color: #F53003; font-weight: 500; text-decoration: none;">View Details</a>
+                        `);
                 markers.push(marker);
             });
 

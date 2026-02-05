@@ -83,6 +83,52 @@
                                         </span>
                                     @endif
                                 </a>
+
+                                <!-- Notifications Dropdown -->
+                                @if(!auth()->user()->isLandlord())
+                                <div class="relative ml-4" style="position: relative;" x-data="{ open: false }">
+                                    <button @click="open = !open" @click.away="open = false" class="nav-link relative"
+                                        style="color: var(--gray-700); text-decoration: none; display: flex; align-items: center;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                            stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+                                        </svg>
+                                        @if(auth()->user()->unreadNotifications->count() > 0)
+                                            <span
+                                                style="position: absolute; top: -5px; right: -5px; background-color: #ef4444; color: white; border-radius: 50%; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold;">
+                                                {{ auth()->user()->unreadNotifications->count() }}
+                                            </span>
+                                        @endif
+                                    </button>
+
+                                    <!-- Dropdown Body -->
+                                    <div x-show="open"
+                                        style="display: none; position: absolute; right: 0; mt-2; width: 320px; background: white; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border: 1px solid #e5e7eb; z-index: 50;"
+                                        x-transition>
+                                        <div class="py-2">
+                                            <div class="px-4 py-2 border-b border-gray-100 font-semibold text-sm text-gray-700">
+                                                Notifications</div>
+                                            @forelse(auth()->user()->unreadNotifications as $notification)
+                                                <a href="{{ route('notifications.read', $notification->id) }}"
+                                                    class="block px-4 py-3 hover:bg-gray-50 border-b border-gray-50 transition">
+                                                    <p class="text-sm font-medium text-gray-900">
+                                                        {{ $notification->data['message'] ?? 'New Notification' }}</p>
+                                                    <p class="text-xs text-gray-500 mt-1">
+                                                        {{ $notification->created_at->diffForHumans() }}</p>
+                                                </a>
+                                            @empty
+                                                <div class="px-4 py-3 text-sm text-gray-500 text-center">No new notifications</div>
+                                            @endforelse
+                                            @if(auth()->user()->unreadNotifications->count() > 0)
+                                                <a href="{{ route('notifications.readAll') }}"
+                                                    class="block px-4 py-2 text-xs text-center text-blue-600 hover:text-blue-800 font-medium">Mark
+                                                    all as read</a>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                                @endif
                                 @if(auth()->user()->isLandlord())
                                     <a href="{{ route('properties.create') }}" class="nav-link"
                                         style="color: var(--gray-700); text-decoration: none; font-weight: 500;">Create Listing</a>
@@ -148,18 +194,18 @@
                             @auth
                                 <a href="{{ auth()->user()->isLandlord() ? route('profile.edit') : route('roommate-profiles.create') }}"
                                     style="
-                                                                                                                                                    font-size: 14px; 
-                                                                                                                                                    font-weight: 600; 
-                                                                                                                                                    color: var(--dwello-primary); 
-                                                                                                                                                    border: 2px solid var(--dwello-primary); 
-                                                                                                                                                    padding: 6px 16px; 
-                                                                                                                                                    border-radius: 20px; 
-                                                                                                                                                    box-shadow: 0 0 10px rgba(0,0,0,0.05);
-                                                                                                                                                    transition: all 0.3s ease;
-                                                                                                                                                    display: flex;
-                                                                                                                                                    align-items: center;
-                                                                                                                                                    text-decoration: none;
-                                                                                                                                                ">
+                                                                                                                                                            font-size: 14px; 
+                                                                                                                                                            font-weight: 600; 
+                                                                                                                                                            color: var(--dwello-primary); 
+                                                                                                                                                            border: 2px solid var(--dwello-primary); 
+                                                                                                                                                            padding: 6px 16px; 
+                                                                                                                                                            border-radius: 20px; 
+                                                                                                                                                            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+                                                                                                                                                            transition: all 0.3s ease;
+                                                                                                                                                            display: flex;
+                                                                                                                                                            align-items: center;
+                                                                                                                                                            text-decoration: none;
+                                                                                                                                                        ">
                                     @if(Auth::user()->profile_photo_url)
                                         <img src="{{ Auth::user()->profile_photo_url }}" alt="{{ Auth::user()->name }}"
                                             style="width: 20px; height: 20px; border-radius: 50%; object-cover: cover; margin-right: 6px;">
@@ -178,20 +224,20 @@
                                 </a>
                                 {{-- Upgrade Button --}}
                                 <a href="{{ url('/payment') }}" style="
-                                                                                            font-size: 14px; 
-                                                                                            font-weight: 600; 
-                                                                                            color: white; 
-                                                                                            background: #f97316; 
-                                                                                            padding: 8px 16px; 
-                                                                                            border-radius: 20px; 
-                                                                                            box-shadow: 0 4px 6px -1px rgba(249, 115, 22, 0.4);
-                                                                                            transition: all 0.3s ease;
-                                                                                            text-decoration: none;
-                                                                                            margin-left: 12px;
-                                                                                            display: inline-flex;
-                                                                                            align-items: center;
-                                                                                            gap: 6px;
-                                                                                        "
+                                                                                                    font-size: 14px; 
+                                                                                                    font-weight: 600; 
+                                                                                                    color: white; 
+                                                                                                    background: #f97316; 
+                                                                                                    padding: 8px 16px; 
+                                                                                                    border-radius: 20px; 
+                                                                                                    box-shadow: 0 4px 6px -1px rgba(249, 115, 22, 0.4);
+                                                                                                    transition: all 0.3s ease;
+                                                                                                    text-decoration: none;
+                                                                                                    margin-left: 12px;
+                                                                                                    display: inline-flex;
+                                                                                                    align-items: center;
+                                                                                                    gap: 6px;
+                                                                                                "
                                     onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
                                         stroke="currentColor" style="width: 16px; height: 16px;">
@@ -201,19 +247,19 @@
                                     Upgrade
                                 </a>
 
-                                <a href="{{ route('profile.edit') }}" style="
-                                                                                                                                display: flex; 
-                                                                                                                                align-items: center; 
-                                                                                                                                justify-content: center;
-                                                                                                                                width: 36px; 
-                                                                                                                                height: 36px; 
-                                                                                                                                border-radius: 50%; 
-                                                                                                                                background: var(--gray-100); 
-                                                                                                                                color: var(--gray-600);
-                                                                                                                                transition: all 0.2s;
-                                                                                                                                text-decoration: none;
-                                                                                                                            "
-                                    title="Account Settings"
+                                <a href="{{ route('profile.edit') }}"
+                                    style="
+                                                                                                                                        display: flex; 
+                                                                                                                                        align-items: center; 
+                                                                                                                                        justify-content: center;
+                                                                                                                                        width: 36px; 
+                                                                                                                                        height: 36px; 
+                                                                                                                                        border-radius: 50%; 
+                                                                                                                                        background: var(--gray-100); 
+                                                                                                                                        color: var(--gray-600);
+                                                                                                                                        transition: all 0.2s;
+                                                                                                                                        text-decoration: none;
+                                                                                                                                    " title="Account Settings"
                                     onmouseover="this.style.background='var(--gray-200)'; this.style.color='var(--gray-900)';"
                                     onmouseout="this.style.background='var(--gray-100)'; this.style.color='var(--gray-600)';">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"

@@ -91,6 +91,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/favorites', [FavoriteController::class, 'index'])->name('favorites.index');
     Route::post('/favorites/{roommateProfile}', [FavoriteController::class, 'toggle'])->name('favorites.toggle');
 
+    // Notifications
+    Route::get('/notifications/{id}/read', [\App\Http\Controllers\NotificationController::class, 'read'])->name('notifications.read');
+    Route::get('/notifications/read-all', [\App\Http\Controllers\NotificationController::class, 'readAll'])->name('notifications.readAll');
+
     // Messaging Routes
     // Scheduled Messages (Must be before wildcard /messages/{conversation})
     Route::post('/messages/schedule', [\App\Http\Controllers\ScheduledMessageController::class, 'store'])->name('messages.schedule');
@@ -148,3 +152,5 @@ Route::post('/create-checkout-session', [StripeController::class, 'createCheckou
 Route::view('/payment', 'payment')->name('payment');
 Route::get('/payment-success', [StripeController::class, 'success'])->name('payment.success');
 Route::view('/payment-cancel', 'payment-cancel')->name('payment.cancel');
+
+
