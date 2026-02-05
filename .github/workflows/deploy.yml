@@ -51,9 +51,6 @@ jobs:
             git pull origin main;
             composer install --no-interaction --prefer-dist;
 
- 	    sudo chown -R www-data:www-data storage bootstrap/cache
-      	    sudo chmod -R 775 storage bootstrap/cache
-
             mysql -u${{ secrets.DB_USER }} -p${{ secrets.DB_PASSWORD }} ${{ secrets.DB_NAME }} -e "
             SET FOREIGN_KEY_CHECKS = 0;
             SET @tables = NULL;
