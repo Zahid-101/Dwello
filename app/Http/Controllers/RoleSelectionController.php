@@ -30,7 +30,7 @@ class RoleSelectionController extends Controller
         ]);
 
         $user = auth()->user();
-        
+
         // Prevent changing role if already set (security)
         if ($user->role) {
             return redirect()->route('home');
@@ -41,10 +41,9 @@ class RoleSelectionController extends Controller
         ]);
 
         // Redirect based on role
-        if ($user->role === 'landlord') {
-            return redirect()->route('properties.index')->with('success', 'Welcome! You can now post listings.');
-        } else {
-            return redirect()->route('roommates.index')->with('success', 'Welcome! Find your perfect flatmate.');
-        }
+        // Redirect to homepage for all roles as requested
+        return redirect()->route('home')
+            ->with('success', 'Welcome! Your role has been set.')
+            ->with('show_onboarding_popup', true);
     }
 }
