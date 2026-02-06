@@ -131,6 +131,31 @@ Route::middleware('auth')->group(function () {
 });
 
 
+
+// Temporary Debug Route for Production
+Route::get('/debug-boost', function () {
+    $ads = \App\Models\BoostedAd::with(['user', 'property'])->get();
+    return [
+        'total_ads_in_db' => $ads->count(),
+        'current_user' => auth()->check() ? [
+            'id' => auth()->id(),
+            'name' => auth()->user()->name,
+            'my_budget_max' => auth()->user()->roommateProfile?->budget_max ?? 'No Profile/Budget',
+        ] : 'Guest (Not Logged In)',
+        'ad_details' => $ads->map(function ($ad) {
+            return [
+                'ad_id' => $ad->id,
+                'is_active' => (bool) $ad->is_active,
+                'has_property_linked' => $ad->property ? 'YES' : 'NULL (BROKEN)',
+                'property_rent' => $ad->property?->monthly_rent ?? 'N/A',
+                'will_show_for_current_user' => auth()->check() && auth()->user()->roommateProfile && auth()->user()->roommateProfile->budget_max
+                    ? ($ad->property->monthly_rent <= auth()->user()->roommateProfile->budget_max ? 'YES' : 'NO (Too Expensive)')
+                    : 'YES (Guest/No Filter)',
+            ];
+        })
+    ];
+});
+
 // Wildcards (must be last)
 Route::get('/properties/{property}', [PropertyController::class, 'show'])
     ->name('properties.show');
