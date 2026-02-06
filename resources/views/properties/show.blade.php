@@ -6,9 +6,13 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 <style>
     .property-header { position: relative; margin-bottom: 24px; }
-    .gallery-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; height: 400px; border-radius: 20px; overflow: hidden; margin-bottom: 32px; }
+    .gallery-grid { display: grid; gap: 12px; height: auto; border-radius: 20px; overflow: hidden; margin-bottom: 32px; }
+    @media (min-width: 768px) {
+        .gallery-grid { grid-template-columns: 2fr 1fr; height: 400px; }
+    }
     .main-photo { height: 100%; width: 100%; object-fit: cover; }
     .side-photos { display: grid; gap: 12px; height: 100%; grid-template-rows: 1fr 1fr; }
+    /* Hide side photos on mobile if needed, or stack them. For now let's keep them regular flow or hidden on very small screens if needed, but grid update above handles main layout */
     .side-photo { height: 100%; width: 100%; object-fit: cover; }
     .feature-card { background: var(--gray-50); padding: 16px; border-radius: 16px; text-align: center; }
     .feature-value { font-size: 18px; font-weight: 600; color: var(--gray-900); }
@@ -23,7 +27,10 @@
     .star-rating label:hover ~ label,
     .star-rating input:checked ~ label { color: #f59e0b; }
     
-    .review-section-container { background: white; border-radius: 24px; padding: 32px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); border: 1px solid var(--gray-100); width: 50%; margin: 0 auto; }
+    .review-section-container { background: white; border-radius: 24px; padding: 24px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); border: 1px solid var(--gray-100); width: 100%; margin: 0 auto; }
+    @media (min-width: 768px) {
+        .review-section-container { width: 60%; padding: 32px; }
+    }
 </style>
 @endpush
 
@@ -81,9 +88,9 @@
     </div>
 
 
-    <div class="property-show-grid" style="display: grid; grid-template-columns: 2fr 1fr; gap: 32px; margin-bottom: 48px; align-items: start;">
+    <div class="property-show-grid grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12 items-start">
         {{-- Left Content --}}
-        <div>
+        <div class="lg:col-span-2">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
                 <div>
                     <h1 class="text-2xl md:text-3xl font-poppins font-semibold text-gray-900 leading-tight mb-2">
@@ -106,7 +113,7 @@
             </div>
 
             {{-- Key Feature Row --}}
-            <div class="feature-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px;">
+            <div class="feature-grid grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                 <div class="feature-card">
                     <div class="feature-value">{{ ucfirst($property->property_type) }}</div>
                     <div class="feature-label">Type</div>

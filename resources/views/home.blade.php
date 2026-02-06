@@ -153,4 +153,102 @@
         </div>
     </div>
     </div>
+    </div>
+
+    {{-- Onboarding Popup Modal --}}
+    @if(session('show_onboarding_popup'))
+        <div id="onboarding-modal"
+            style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9999; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+            <div
+                style="background: white; width: 90%; max-width: 500px; padding: 32px; border-radius: 24px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); position: relative; text-align: center;">
+
+                {{-- Close Button --}}
+                <button onclick="document.getElementById('onboarding-modal').remove()"
+                    style="position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 24px; cursor: pointer; color: var(--gray-400); height: 32px; width: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: background 0.2s;">
+                    &times;
+                </button>
+
+                <div style="margin-bottom: 24px;">
+                    <div
+                        style="width: 64px; height: 64px; background: #fff7ed; color: #f97316; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 16px auto;">
+                        👋
+                    </div>
+                    <h2
+                        style="font-family: 'Poppins', sans-serif; font-size: 24px; font-weight: 700; color: var(--gray-900); margin-bottom: 8px;">
+                        Welcome to Dwello!
+                    </h2>
+                    <p style="color: var(--gray-600); font-size: 15px;">
+                        Thanks for joining our community.
+                    </p>
+                </div>
+
+                @if(auth()->user()->role === 'seeker')
+                    {{-- Tenant/Seeker Content --}}
+                    <div
+                        style="text-align: left; background: var(--gray-50); padding: 20px; border-radius: 16px; border: 1px solid var(--gray-100);">
+                        <h3 style="font-weight: 600; color: var(--gray-900); margin-bottom: 12px; font-size: 16px;">Next Steps:</h3>
+                        <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px;">
+                            <li style="display: flex; gap: 12px; align-items: start;">
+                                <span
+                                    style="background: #fff7ed; color: #f97316; font-weight: bold; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0;">1</span>
+                                <div style="font-size: 14px; color: var(--gray-700);">
+                                    <strong>Complete your profile:</strong> Click your user icon (top right) → Profile to add your
+                                    details. This is required to find matches.
+                                </div>
+                            </li>
+                            <li style="display: flex; gap: 12px; align-items: start;">
+                                <span
+                                    style="background: #fff7ed; color: #f97316; font-weight: bold; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0;">2</span>
+                                <div style="font-size: 14px; color: var(--gray-700);">
+                                    <strong>Get Notified:</strong> Once your profile is ready, you'll receive notifications for
+                                    matching properties and roommates under the bell icon 🔔.
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div style="margin-top: 24px;">
+                        <a href="{{ route('profile.edit') }}" class="btn btn-primary"
+                            style="width: 100%; display: block; text-align: center;">Go to Profile</a>
+                    </div>
+                @elseif(auth()->user()->role === 'landlord')
+                    {{-- Landlord Content --}}
+                    <div
+                        style="text-align: left; background: var(--gray-50); padding: 20px; border-radius: 16px; border: 1px solid var(--gray-100);">
+                        <h3 style="font-weight: 600; color: var(--gray-900); margin-bottom: 12px; font-size: 16px;">How to list your
+                            space:</h3>
+                        <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px;">
+                            <li style="display: flex; gap: 12px; align-items: start;">
+                                <span
+                                    style="background: #fff7ed; color: #f97316; font-weight: bold; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0;">1</span>
+                                <div style="font-size: 14px; color: var(--gray-700);">
+                                    <strong>Create a Property:</strong> Click the "Create Listing" button in the top navigation bar.
+                                </div>
+                            </li>
+                            <li style="display: flex; gap: 12px; align-items: start;">
+                                <span
+                                    style="background: #fff7ed; color: #f97316; font-weight: bold; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0;">2</span>
+                                <div style="font-size: 14px; color: var(--gray-700);">
+                                    <strong>Manage Listings:</strong> You can view, edit, or delete your listings at any time from
+                                    your dashboard.
+                                </div>
+                            </li>
+                            <li style="display: flex; gap: 12px; align-items: start;">
+                                <span
+                                    style="background: #fff7ed; color: #f97316; font-weight: bold; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0;">3</span>
+                                <div style="font-size: 14px; color: var(--gray-700);">
+                                    <strong>Boost Visibility:</strong> Special ad features are available to help you reach more
+                                    tenants.
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div style="margin-top: 24px;">
+                        <a href="{{ route('properties.create') }}" class="btn btn-primary"
+                            style="width: 100%; display: block; text-align: center;">Create Listing</a>
+                    </div>
+                @endif
+
+            </div>
+        </div>
+    @endif
 @endsection

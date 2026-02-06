@@ -95,7 +95,8 @@
     }
 
     /* Map: Ensure visible and fixed height */
-    .map-container {
+    /* Map: Ensure visible and fixed height ONLY for listing layout */
+    .listing-layout .map-container {
         display: block !important;
         width: 100% !important;
         height: 400px !important;
@@ -103,7 +104,6 @@
         margin-top: 0 !important;
         margin-bottom: 24px !important;
         order: 1;
-        /* Map above results (since results is 2) or use -1 */
     }
 
     /* Roommate Grid */

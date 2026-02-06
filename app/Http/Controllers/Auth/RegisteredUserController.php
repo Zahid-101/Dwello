@@ -31,9 +31,11 @@ class RegisteredUserController extends Controller
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class, 'regex:/(.+)@(.+)\.(.+)/i'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'terms' => ['required', 'accepted'],
+        ], [
+            'email.regex' => 'Please provide a valid email address including a domain extension (e.g., .com).',
         ]);
 
         $user = User::create([
@@ -53,6 +55,6 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false));
+        return redirect(route('role.select', absolute: false));
     }
 }

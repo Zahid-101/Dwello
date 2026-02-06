@@ -270,10 +270,22 @@ class RoommateProfileController extends Controller
                     $q->where('preferred_city', 'like', '%' . $roommateProfile->preferred_city . '%')
                         ->where('id', '!=', $roommateProfile->id);
 
-                    // Optional: Check budget overlap
+                    // Relaxed Budget Check: Only filter if both have valid ranges
                     $q->where(function ($sub) use ($roommateProfile) {
-                        $sub->where('budget_max', '>=', $roommateProfile->budget_min)
-                            ->where('budget_min', '<=', $roommateProfile->budget_max);
+                        // If the new profile has NO budget set, assume they fit anywhere (OR handle nulls)
+                        if (!$roommateProfile->budget_min && !$roommateProfile->budget_max) {
+                            return;
+                        }
+
+                        // Match if:
+                        // 1. Their budget overlaps with my budget
+                        // 2. OR They have NO budget constraints (nulls)
+                        $sub->where(function ($query) use ($roommateProfile) {
+                            $query->where('budget_max', '>=', $roommateProfile->budget_min ?? 0)
+                                ->where('budget_min', '<=', $roommateProfile->budget_max ?? 999999);
+                        })->orWhere(function ($query) {
+                            $query->whereNull('budget_max')->orWhereNull('budget_min');
+                        });
                     });
 
                 })->where('id', '!=', auth()->id())->get();

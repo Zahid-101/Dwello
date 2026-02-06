@@ -167,6 +167,40 @@ Route::get('/users/{user}', [UserController::class, 'show'])
 // Breeze auth routes (login, register, logout, etc.)
 require __DIR__ . '/auth.php';
 
+Route::get('/debug-notify', function () {
+    $user = auth()->user();
+    if (!$user)
+        return 'Not logged in';
+
+    // 1. Check Config
+    $queueConn = config('queue.default');
+
+    // 2. Create Dummy Profile for notification
+    $dummyProfile = new \App\Models\RoommateProfile([
+        'user_id' => 99999,
+        'preferred_city' => 'Test City',
+        'budget_max' => 50000,
+    ]);
+    // We need to associate a mock user for the name
+    $dummyUser = new \App\Models\User(['name' => 'Test User']);
+    $dummyProfile->setRelation('user', $dummyUser);
+
+    // 3. Send Notification
+    try {
+        $user->notify(new \App\Notifications\NewRoommateMatch($dummyProfile));
+        $status = "Notification Sent to {$user->name}!";
+    } catch (\Exception $e) {
+        $status = "Error sending: " . $e->getMessage();
+    }
+
+    return [
+        'queue_connection' => $queueConn,
+        'status' => $status,
+        'db_notification_count_before' => $user->notifications()->count(),
+        'unread_count' => $user->unreadNotifications()->count(),
+    ];
+});
+
 Route::view('/payment', 'payment');
 
 Route::view('/success', 'payment-success');
